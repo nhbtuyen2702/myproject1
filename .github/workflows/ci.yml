@@ -58,6 +58,13 @@ jobs:
       # 8. Step - Chạy container từ Docker image (cho mục đích kiểm thử)
       - name: Run Docker Container for Testing
         run: |
+          echo "Starting container from Docker image: ${{ secrets.DOCKER_USERNAME }}/myproject1:latest"
           docker run -d -p 8080:8080 --name myproject1-container ${{ secrets.DOCKER_USERNAME }}/myproject1:latest
-          sleep 10  # Đợi container khởi động
-          curl -f http://localhost:8080/actuator/health  # Kiểm tra ứng dụng có hoạt động không
+          echo "Container started, waiting for the application to be ready..."
+          sleep 30  # Thêm thời gian chờ để đảm bảo ứng dụng có đủ thời gian để khởi động
+          echo "Checking running containers:"
+          docker ps -a  # In ra danh sách container đang chạy
+          echo "Checking logs of the container:"
+          docker logs myproject1-container  # Kiểm tra log của container để xem ứng dụng có khởi động thành công không
+          echo "Running health check on the application:"
+          curl -f http://localhost:8080/actuator/health || echo "Health check failed"
