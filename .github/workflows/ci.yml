@@ -76,19 +76,20 @@ jobs:
           docker-compose -f docker-compose.yml up -d --build  # Khởi động cả MySQL và Spring Boot
           echo "Docker Compose started."
 
-      # 13. Step - Kiểm tra trạng thái của các container
+      # 13. Step - Kiểm tra trạng thái của tất cả container
       - name: Check Running Docker Containers
         run: |
           echo "Listing all running Docker containers..."
-          docker ps -a
+          docker ps -a  # In ra tất cả các container (đang chạy và đã dừng)
           echo "Container status checked."
 
-      # 14. Step - Kiểm tra log của ứng dụng với chi tiết
-      - name: Check Application Logs
+      # 14. Step - Kiểm tra log của tất cả các container (bao gồm cả MySQL và Spring Boot)
+      - name: Check All Container Logs
         run: |
-          echo "Checking logs of the Spring Boot application..."
-          docker logs myproject1-app || echo "Failed to retrieve logs"
-          echo "Application logs checked."
+          echo "Checking logs of all containers..."
+          docker logs myproject1-app || echo "Failed to retrieve Spring Boot logs"
+          docker logs myproject1-db || echo "Failed to retrieve MySQL logs"  # Giả định container DB là myproject1-db
+          echo "All container logs checked."
 
       # 15. Step - Chạy kiểm tra sức khỏe (health check) của ứng dụng với debug
       - name: Run Health Check
