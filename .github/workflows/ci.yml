@@ -16,42 +16,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 4. Step - Check out mã nguồn từ repository
+      # Check out mã nguồn từ repository
       - name: Check out code
         uses: actions/checkout@v4
 
-      # 5. Step - Thiết lập JDK
+      # Thiết lập JDK
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # 6. Step - Build ứng dụng với Maven
+      # Build ứng dụng với Maven
       - name: Build with Maven
         run: |
           echo "Building the project using Maven..."
           mvn clean install
           echo "Maven build completed."
 
-      # 7. Step - Đăng nhập Docker Hub
+      # Đăng nhập Docker Hub
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      # 8. Step - Build Docker image
+      # Build Docker image
       - name: Build Docker Image
         run: |
           echo "Building Docker image..."
           docker build -t myproject1-app:latest .
           echo "Docker image build completed."
 
-      # 9. Step - Liệt kê Docker image
+      # Liệt kê Docker image
       - name: List Docker Images
         run: |
           echo "Listing Docker images to verify build..."
-          docker images  # Liệt kê tất cả các Docker images để kiểm tra xem `myproject1-app:latest` có tồn tại không
+          docker images
 
-      # 10. Step - Tag và push Docker image lên Docker Hub
+      # Tag và push Docker image lên Docker Hub
       - name: Tag and Push Docker Image
         run: |
           echo "Tagging Docker image: myproject1-app:latest..."
@@ -60,7 +60,7 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/myproject1:latest
           echo "Docker image pushed successfully."
 
-      # 11. Step - Cài đặt Docker Compose
+      # Cài đặt Docker Compose
       - name: Install Docker Compose
         run: |
           echo "Installing Docker Compose..."
@@ -69,33 +69,33 @@ jobs:
           docker-compose version  # Xác nhận Docker Compose đã được cài đặt
           echo "Docker Compose installed."
 
-      # 12. Step - Thiết lập Docker Compose
+      # Thiết lập Docker Compose
       - name: Set up Docker Compose
         run: |
           echo "Starting Docker Compose with docker-compose.yml..."
-          docker-compose -f docker-compose.yml up -d --build  # Khởi động cả MySQL và Spring Boot
+          docker-compose -f docker-compose.yml up -d --build
           echo "Docker Compose started."
 
-      # 13. Step - Kiểm tra trạng thái của tất cả container
+      # Kiểm tra trạng thái của các container
       - name: Check Running Docker Containers
         run: |
           echo "Listing all running Docker containers..."
-          docker ps -a  # In ra tất cả các container (đang chạy và đã dừng)
+          docker ps -a
           echo "Container status checked."
 
-      # 14. Step - Kiểm tra log của tất cả các container (bao gồm cả MySQL và Spring Boot)
+      # Kiểm tra log của tất cả các container
       - name: Check All Container Logs
         run: |
           echo "Checking logs of all containers..."
-          docker logs myproject1-app || echo "Failed to retrieve Spring Boot logs"
-          docker logs myproject-mysql || echo "Failed to retrieve MySQL logs"  # Đã sửa tên container MySQL
+          docker logs myproject1-app --details --timestamps || echo "Failed to retrieve Spring Boot logs"
+          docker logs myproject-mysql --details --timestamps || echo "Failed to retrieve MySQL logs"
           echo "All container logs checked."
 
-      # 15. Step - Chạy kiểm tra sức khỏe (health check) của ứng dụng với debug
+      # Chạy kiểm tra sức khỏe (health check) của ứng dụng với debug
       - name: Run Health Check
         run: |
           echo "Waiting for the application to be ready..."
-          sleep 120  # Đợi thêm thời gian để ứng dụng Spring Boot khởi động (tăng từ 60s lên 120s)
+          sleep 180  # Đợi thêm thời gian để ứng dụng Spring Boot khởi động (tăng từ 120s lên 180s)
           echo "Running health check on the application..."
           curl -v http://localhost:8080/actuator/health || echo "Health check failed"
           echo "Health check completed."
