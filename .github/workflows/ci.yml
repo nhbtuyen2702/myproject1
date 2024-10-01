@@ -88,14 +88,14 @@ jobs:
         run: |
           echo "Checking logs of all containers..."
           docker logs myproject1-app || echo "Failed to retrieve Spring Boot logs"
-          docker logs myproject1-db || echo "Failed to retrieve MySQL logs"  # Giả định container DB là myproject1-db
+          docker logs myproject-mysql || echo "Failed to retrieve MySQL logs"  # Đã sửa tên container MySQL
           echo "All container logs checked."
 
       # 15. Step - Chạy kiểm tra sức khỏe (health check) của ứng dụng với debug
       - name: Run Health Check
         run: |
           echo "Waiting for the application to be ready..."
-          sleep 60  # Đợi thêm thời gian để ứng dụng Spring Boot khởi động
+          sleep 120  # Đợi thêm thời gian để ứng dụng Spring Boot khởi động (tăng từ 60s lên 120s)
           echo "Running health check on the application..."
           curl -v http://localhost:8080/actuator/health || echo "Health check failed"
           echo "Health check completed."
