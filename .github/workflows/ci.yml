@@ -27,35 +27,44 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 6. Step - Build ứng dụng với Maven, thêm debug log để quan sát
+      # 6. Step - Build ứng dụng với Maven
       - name: Build with Maven
         run: |
           echo "Building the project using Maven..."
           mvn clean install
           echo "Maven build completed."
 
-      # 7. Step - Thiết lập Docker Compose, thêm debug log
+      # 7. Step - Cài đặt Docker Compose
+      - name: Install Docker Compose
+        run: |
+          echo "Installing Docker Compose..."
+          sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+          echo "Docker Compose installation completed."
+
+      # 8. Step - Thiết lập Docker Compose
       - name: Set up Docker Compose
         run: |
           echo "Starting Docker Compose with docker-compose.yml..."
           docker-compose -f docker-compose.yml up -d  # Khởi động cả MySQL và Spring Boot
           echo "Docker Compose started."
 
-      # 8. Step - Kiểm tra trạng thái của các container, thêm debug log
+      # 9. Step - Kiểm tra trạng thái của các container
       - name: Check Running Docker Containers
         run: |
           echo "Listing all running Docker containers..."
           docker ps -a  # In ra danh sách các container đang chạy
           echo "Container status checked."
 
-      # 9. Step - Kiểm tra log của ứng dụng, thêm debug log
+      # 10. Step - Kiểm tra log của ứng dụng
       - name: Check Application Logs
         run: |
           echo "Checking logs of the Spring Boot application..."
           docker logs myproject1-app  # Kiểm tra log của ứng dụng Spring Boot để đảm bảo rằng nó đã khởi động thành công
           echo "Application logs checked."
 
-      # 10. Step - Chạy kiểm tra sức khỏe (health check) của ứng dụng, thêm debug log
+      # 11. Step - Chạy kiểm tra sức khỏe (health check) của ứng dụng
       - name: Run Health Check
         run: |
           echo "Waiting for the application to be ready..."
@@ -64,14 +73,14 @@ jobs:
           curl -f http://localhost:8080/actuator/health || echo "Health check failed"
           echo "Health check completed."
 
-      # 11. Step - Đăng nhập Docker Hub và push image, thêm debug log
+      # 12. Step - Đăng nhập Docker Hub và push image
       - name: Log in to Docker Hub
         run: |
           echo "Logging into Docker Hub..."
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
           echo "Login to Docker Hub completed."
 
-      # 12. Step - Tag và push Docker image lên Docker Hub, thêm debug log
+      # 13. Step - Tag và push Docker image lên Docker Hub
       - name: Tag and Push Docker Image
         run: |
           echo "Tagging Docker image: myproject1-app:latest..."
