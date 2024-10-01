@@ -60,28 +60,37 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/myproject1:latest
           echo "Docker image pushed successfully."
 
-      # 11. Step - Thiết lập Docker Compose
+      # 11. Step - Cài đặt Docker Compose
+      - name: Install Docker Compose
+        run: |
+          echo "Installing Docker Compose..."
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose version  # Xác nhận Docker Compose đã được cài đặt
+          echo "Docker Compose installed."
+
+      # 12. Step - Thiết lập Docker Compose
       - name: Set up Docker Compose
         run: |
           echo "Starting Docker Compose with docker-compose.yml..."
           docker-compose -f docker-compose.yml up -d  # Khởi động cả MySQL và Spring Boot
           echo "Docker Compose started."
 
-      # 12. Step - Kiểm tra trạng thái của các container
+      # 13. Step - Kiểm tra trạng thái của các container
       - name: Check Running Docker Containers
         run: |
           echo "Listing all running Docker containers..."
           docker ps -a
           echo "Container status checked."
 
-      # 13. Step - Kiểm tra log của ứng dụng
+      # 14. Step - Kiểm tra log của ứng dụng
       - name: Check Application Logs
         run: |
           echo "Checking logs of the Spring Boot application..."
           docker logs myproject1-app
           echo "Application logs checked."
 
-      # 14. Step - Chạy kiểm tra sức khỏe (health check) của ứng dụng
+      # 15. Step - Chạy kiểm tra sức khỏe (health check) của ứng dụng
       - name: Run Health Check
         run: |
           echo "Waiting for the application to be ready..."
