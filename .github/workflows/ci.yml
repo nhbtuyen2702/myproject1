@@ -46,8 +46,9 @@ jobs:
         run: |
           docker tag myproject1:latest ${{ secrets.DOCKER_USERNAME }}/myproject1:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/myproject1:latest
-
-      # 8. Step - Chạy container từ Docker image (cho mục đích kiểm thử)
+          
+      
+        # 8. Step - Chạy container từ Docker image (cho mục đích kiểm thử)
       - name: Run Docker Container for Testing
         run: |
           docker run -d -p 8080:8080 --name myproject1-container ${{ secrets.DOCKER_USERNAME }}/myproject1:latest
