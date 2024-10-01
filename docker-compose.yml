@@ -2,6 +2,7 @@ version: '3.8'
 services:
   app:
     image: myproject1-app:latest
+    container_name: myproject1-app
     ports:
       - "8080:8080"
     environment:
@@ -15,6 +16,7 @@ services:
 
   db:
     image: mysql:8.0
+    container_name: myproject-mysql
     environment:
       MYSQL_ROOT_PASSWORD: 2702
       MYSQL_DATABASE: myprojectdb

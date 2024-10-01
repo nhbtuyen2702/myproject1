@@ -1,7 +1,7 @@
 # Tên của workflow này để dễ nhận diện
 name: Build, Test, and Deploy Spring Boot Application with Docker Compose
 
-# 1. Event - Kích hoạt workflow khi có sự kiện push hoặc pull request lên nhánh master
+# Kích hoạt workflow khi có sự kiện push hoặc pull request lên nhánh master
 on:
   push:
     branches:
@@ -10,48 +10,47 @@ on:
     branches:
       - master
 
-# Định nghĩa các công việc (jobs) trong workflow
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # Check out mã nguồn từ repository
+      # 1. Check out mã nguồn từ repository
       - name: Check out code
         uses: actions/checkout@v4
 
-      # Thiết lập JDK
+      # 2. Thiết lập JDK
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # Build ứng dụng với Maven
+      # 3. Build ứng dụng với Maven
       - name: Build with Maven
         run: |
           echo "Building the project using Maven..."
           mvn clean install
           echo "Maven build completed."
 
-      # Đăng nhập Docker Hub
+      # 4. Đăng nhập Docker Hub
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      # Build Docker image
+      # 5. Build Docker image
       - name: Build Docker Image
         run: |
           echo "Building Docker image..."
           docker build -t myproject1-app:latest .
           echo "Docker image build completed."
 
-      # Liệt kê Docker image
+      # 6. Liệt kê Docker image
       - name: List Docker Images
         run: |
           echo "Listing Docker images to verify build..."
           docker images
 
-      # Tag và push Docker image lên Docker Hub
+      # 7. Tag và push Docker image lên Docker Hub
       - name: Tag and Push Docker Image
         run: |
           echo "Tagging Docker image: myproject1-app:latest..."
@@ -60,7 +59,7 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/myproject1:latest
           echo "Docker image pushed successfully."
 
-      # Cài đặt Docker Compose
+      # 8. Cài đặt Docker Compose
       - name: Install Docker Compose
         run: |
           echo "Installing Docker Compose..."
@@ -69,21 +68,21 @@ jobs:
           docker-compose version  # Xác nhận Docker Compose đã được cài đặt
           echo "Docker Compose installed."
 
-      # Thiết lập Docker Compose
+      # 9. Thiết lập Docker Compose
       - name: Set up Docker Compose
         run: |
           echo "Starting Docker Compose with docker-compose.yml..."
           docker-compose -f docker-compose.yml up -d --build
           echo "Docker Compose started."
 
-      # Kiểm tra trạng thái của các container
+      # 10. Kiểm tra trạng thái của tất cả container
       - name: Check Running Docker Containers
         run: |
           echo "Listing all running Docker containers..."
-          docker ps -a
+          docker ps -a  # Liệt kê tất cả các container để kiểm tra trạng thái
           echo "Container status checked."
 
-      # Kiểm tra log của tất cả các container
+      # 11. Kiểm tra log của tất cả các container (bao gồm cả MySQL và Spring Boot)
       - name: Check All Container Logs
         run: |
           echo "Checking logs of all containers..."
@@ -91,11 +90,19 @@ jobs:
           docker logs myproject-mysql --details --timestamps || echo "Failed to retrieve MySQL logs"
           echo "All container logs checked."
 
-      # Chạy kiểm tra sức khỏe (health check) của ứng dụng với debug
+      # 12. Hiển thị thông tin chi tiết các container (để debug trạng thái)
+      - name: Inspect Docker Containers
+        run: |
+          echo "Inspecting all containers for additional details..."
+          docker inspect myproject1-app || echo "Failed to inspect Spring Boot container"
+          docker inspect myproject-mysql || echo "Failed to inspect MySQL container"
+          echo "Inspection completed."
+
+      # 13. Chạy kiểm tra sức khỏe (health check) của ứng dụng với debug
       - name: Run Health Check
         run: |
           echo "Waiting for the application to be ready..."
-          sleep 180  # Đợi thêm thời gian để ứng dụng Spring Boot khởi động (tăng từ 120s lên 180s)
+          sleep 120  # Đợi thêm thời gian để ứng dụng Spring Boot khởi động (tăng từ 60s lên 120s)
           echo "Running health check on the application..."
           curl -v http://localhost:8080/actuator/health || echo "Health check failed"
           echo "Health check completed."
