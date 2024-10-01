@@ -52,9 +52,10 @@ jobs:
       # 7. Step - Tag và push Docker image lên Docker Hub
       - name: Tag and Push Docker Image
         run: |
-          docker tag myproject1:latest ${{ secrets.DOCKER_USERNAME }}/myproject1:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/myproject1:latest
-
+          echo "Tagging Docker Image: myproject1:latest"
+          docker tag myproject1:latest nhbtuyen2702/myproject1:latest  # Sử dụng tên đăng nhập Docker của bạn
+          echo "Pushing Docker Image to Docker Hub"
+          docker push nhbtuyen2702/myproject1:latest  # Push image lên Docker Hub với tài khoản nhbtuyen2702
       # 8. Step - Chạy container từ Docker image (cho mục đích kiểm thử)
       - name: Run Docker Container for Testing
         run: |
