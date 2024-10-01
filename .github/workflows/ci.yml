@@ -52,13 +52,12 @@ jobs:
       # 7. Step - Tag và push Docker image lên Docker Hub
       - name: Tag and Push Docker Image
         run: |
-          echo "Tagging Docker Image: myproject1:latest"
-          docker tag myproject1:latest 0933721593/myproject1:latest  # Sử dụng tên đăng nhập Docker của bạn
-          echo "Pushing Docker Image to Docker Hub"
-          docker push 0933721593/myproject1:latest  # Push image lên Docker Hub với tài khoản 0933721593
+          docker tag myproject1:latest ${{ secrets.DOCKER_USERNAME }}/myproject1:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/myproject1:latest
+
       # 8. Step - Chạy container từ Docker image (cho mục đích kiểm thử)
       - name: Run Docker Container for Testing
         run: |
-          docker run -d -p 8080:8080 --name myproject1-container 0933721593/myproject1:latest
+          docker run -d -p 8080:8080 --name myproject1-container ${{ secrets.DOCKER_USERNAME }}/myproject1:latest
           sleep 10  # Đợi container khởi động
           curl -f http://localhost:8080/actuator/health  # Kiểm tra ứng dụng có hoạt động không
