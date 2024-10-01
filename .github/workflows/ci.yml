@@ -59,6 +59,6 @@ jobs:
       # 8. Step - Chạy container từ Docker image (cho mục đích kiểm thử)
       - name: Run Docker Container for Testing
         run: |
-          docker run -d -p 8080:8080 --name myproject1-container ${{ secrets.DOCKER_USERNAME }}/myproject1:latest
+          docker run -d -p 8080:8080 --name myproject1-container 0933721593/myproject1:latest
           sleep 10  # Đợi container khởi động
           curl -f http://localhost:8080/actuator/health  # Kiểm tra ứng dụng có hoạt động không
