@@ -1,0 +1,61 @@
+# Tên của workflow này để dễ nhận diện
+name: Build and Test Spring Boot Application
+
+# 1. Event - Kích hoạt workflow khi có sự kiện push hoặc pull request lên nhánh master
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+# Định nghĩa các công việc (jobs) trong workflow
+jobs:
+  # 3. Job - Một job để build và test ứng dụng
+  build:
+    # 5. Runner - Chạy job trên một runner Ubuntu mới nhất
+    runs-on: ubuntu-latest
+
+    # Các bước (steps) trong job
+    steps:
+      # 4. Step - Check out mã nguồn từ repository
+      - name: Check out code
+        uses: actions/checkout@v4  # Cập nhật lên version v4 để tránh bị deprecated
+
+      # 4. Step - Thiết lập JDK
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4  # Cập nhật lên version v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 4. Step - Cài đặt và sử dụng Cache để tiết kiệm thời gian build Maven
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4  # Cập nhật lên version v4 để tránh bị deprecated
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      # 4. Step - Build ứng dụng với Maven
+      - name: Build with Maven
+        run: mvn clean install
+
+      # 4. Step - Chạy unit tests
+      - name: Run Tests
+        run: mvn test
+
+      # 2. Thực thi file shell script (script.sh) để tạo folder và di chuyển artifact với debug
+      - name: Run Custom Shell Script to Copy Artifacts with Debug
+        run: |
+          chmod +x ./script.sh  # Cấp quyền thực thi cho script.sh
+          ./script.sh            # Chạy file script để tạo folder và copy file
+
+      # 7. Artifact - Upload build artifact từ thư mục artifact_storage
+      - name: Upload build artifact from artifact_storage
+        uses: actions/upload-artifact@v4  # Cập nhật lên version v4 để tránh bị deprecated
+        with:
+          name: build-output
+          path: artifact_storage/  # Đường dẫn thư mục đã được tạo và chứa file build từ script.sh
