@@ -12,7 +12,7 @@ services:
       - mynetwork
 
   app:
-    image: nhbtuyen/myproject1:latest
+    image: 0933721593/myproject1:latest
     container_name: myproject1-app
     ports:
       - "8080:8080"
