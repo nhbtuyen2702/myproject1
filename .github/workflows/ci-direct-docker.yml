@@ -108,16 +108,13 @@ jobs:
           echo "Current working directory: $(pwd)"
           echo "Listing all files and directories in current path:"
           ls -al
-          
           # Tạo thư mục shared_data nếu chưa tồn tại
           if [ ! -d /tmp/shared_data ]; then
-          echo "Creating /tmp/shared_data directory..."
-          sudo mkdir -p /tmp/shared_data
+            echo "Creating /tmp/shared_data directory..."
+            sudo mkdir -p /tmp/shared_data
           fi
           # Đảm bảo quyền truy cập
           sudo chown -R 999:999 /tmp/shared_data  # Thêm quyền thích hợp cho thư mục chia sẻ
-          
-          
           
           docker run -d --name myproject-mysql --network myproject-network \
             -e MYSQL_ROOT_PASSWORD=2702 \
@@ -125,12 +122,6 @@ jobs:
             -v /tmp/shared_data:/shared_data \
             -p 3306:3306 mysql:8.0
           echo "MySQL container is running."
-
-      # Thêm step kiểm tra log chi tiết của MySQL
-      - name: Check MySQL Logs
-        run: |
-          echo "Checking MySQL container logs..."
-          docker logs myproject-mysql || echo "Failed to retrieve MySQL logs"
 
       # 9. Đợi MySQL khởi động và sẵn sàng
       # Chờ 30 giây để MySQL có đủ thời gian khởi động và sẵn sàng chấp nhận kết nối.
@@ -157,16 +148,9 @@ jobs:
             -p 8080:8080 \
             -e SPRING_DATASOURCE_URL=jdbc:mysql://myproject-mysql:3306/myprojectdb \
             -e SPRING_DATASOURCE_USERNAME=root \
-            -e SPRING_DATASOURCE_PASSWORD=2702 myproject1-app:latest
-      
-            
+            -e SPRING_DATASOURCE_PASSWORD=2702 \
+            -v /tmp/shared_data:/app/shared_data myproject1-app:latest
           echo "Spring Boot application is running."
-
-      # Thêm step kiểm tra log chi tiết của MySQL
-      - name: Check MySQL Logs
-        run: |
-          echo "Checking MySQL container logs..."
-          docker logs myproject-mysql || echo "Failed to retrieve MySQL logs"
 
       # 11. Kiểm tra trạng thái container
       # Liệt kê tất cả các container để kiểm tra trạng thái, xem container nào đang chạy hoặc đã dừng.
@@ -198,7 +182,7 @@ jobs:
           ls -al /tmp/shared_data
 
           echo "Checking files in shared data directory in MySQL container..."
-          docker exec myproject-mysql ls -al /var/lib/mysql/shared_data
+          docker exec myproject-mysql ls -al /shared_data
 
           echo "Checking files in shared data directory in Spring Boot container..."
           docker exec myproject1-container ls -al /app/shared_data

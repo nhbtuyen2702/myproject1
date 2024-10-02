@@ -13,7 +13,7 @@ services:
     networks:
       - mynetwork  # Đặt container này trong Docker network 'mynetwork' để nó có thể kết nối với các container khác
     volumes:
-      - /tmp/shared_data:/var/lib/mysql/shared_data  # Chia sẻ dữ liệu giữa host và MySQL container
+      - /tmp/shared_data:/shared_data  # Chia sẻ dữ liệu giữa host và MySQL container
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]  # Kiểm tra MySQL đã sẵn sàng chưa bằng lệnh 'ping'
       interval: 10s  # Kiểm tra mỗi 10 giây
