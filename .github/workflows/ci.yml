@@ -19,7 +19,9 @@ jobs:
       # Sử dụng hành động `actions/checkout@v4` để tải mã nguồn của project từ repository vào trong môi trường làm việc của runner.
       - name: Check out code
         uses: actions/checkout@v4
+      # Thêm thông tin về thư mục hiện tại và liệt kê file, folder
         # Thêm thông tin về thư mục hiện tại và liệt kê file, folder
+      - name: List files after setting up JDK
         run: |
           echo "Current working directory: $(pwd)"
           echo "Listing all files and directories in current path:"
@@ -31,9 +33,10 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'  # Sử dụng OpenJDK Temurin
-          java-version: '17'  # Sử dụng phiên bản Java 17
-        # Thêm thông tin về thư mục hiện tại và liệt kê file, folder
+          distribution: 'temurin'
+          java-version: '17'
+      # Thêm thông tin về thư mục hiện tại và liệt kê file, folder
+      - name: List files after setting up JDK
         run: |
           echo "Current working directory: $(pwd)"
           echo "Listing all files and directories in current path:"
