@@ -12,6 +12,8 @@ services:
       - "3306:3306"  # Ánh xạ cổng 3306 của host tới cổng 3306 của container
     networks:
       - mynetwork  # Đặt container này trong Docker network 'mynetwork' để nó có thể kết nối với các container khác
+    volumes:
+      - /tmp/shared_data:/var/lib/mysql/shared_data  # Chia sẻ dữ liệu giữa host và MySQL container
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]  # Kiểm tra MySQL đã sẵn sàng chưa bằng lệnh 'ping'
       interval: 10s  # Kiểm tra mỗi 10 giây
@@ -29,9 +31,11 @@ services:
       - "8080:8080"  # Ánh xạ cổng 8080 của container ra cổng 8080 của host để truy cập ứng dụng từ bên ngoài
     depends_on:
       db:
-        condition: service_healthy   # Đảm bảo container ứng dụng khởi động sau khi MySQL đã sẵn sàng
+        condition: service_healthy  # Đảm bảo container ứng dụng khởi động sau khi MySQL đã sẵn sàng
     networks:
       - mynetwork  # Container này cũng sẽ nằm trong Docker network 'mynetwork'
+    volumes:
+      - /tmp/shared_data:/app/shared_data  # Chia sẻ dữ liệu giữa host và Spring Boot container
 
 networks:
   mynetwork:

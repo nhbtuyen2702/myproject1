@@ -100,6 +100,7 @@ jobs:
       # - `--network myproject-network`: Chạy container trong network vừa tạo.
       # - `-e MYSQL_ROOT_PASSWORD=2702`: Đặt mật khẩu cho tài khoản root của MySQL.
       # - `-e MYSQL_DATABASE=myprojectdb`: Tạo cơ sở dữ liệu tên 'myprojectdb' khi MySQL khởi động.
+      # - `-v /tmp/shared_data:/var/lib/mysql/shared_data`: Chia sẻ thư mục `/tmp/shared_data` trên host với `/var/lib/mysql/shared_data` trong container MySQL.
       # - `-p 3306:3306`: Ánh xạ cổng 3306 của container MySQL ra cổng 3306 của host.
       - name: Run MySQL Container
         run: |
@@ -107,7 +108,11 @@ jobs:
           echo "Current working directory: $(pwd)"
           echo "Listing all files and directories in current path:"
           ls -al
-          docker run -d --name myproject-mysql --network myproject-network -e MYSQL_ROOT_PASSWORD=2702 -e MYSQL_DATABASE=myprojectdb -p 3306:3306 mysql:8.0
+             docker run -d --name myproject-mysql --network myproject-network \
+            -e MYSQL_ROOT_PASSWORD=2702 \
+            -e MYSQL_DATABASE=myprojectdb \
+            -v /tmp/shared_data:/var/lib/mysql/shared_data \
+            -p 3306:3306 mysql:8.0
           echo "MySQL container is running."
 
       # 9. Đợi MySQL khởi động và sẵn sàng
@@ -131,7 +136,12 @@ jobs:
           echo "Current working directory: $(pwd)"
           echo "Listing all files and directories in current path:"
           ls -al
-          docker run -d --name myproject1-container --network myproject-network -p 8080:8080 -e SPRING_DATASOURCE_URL=jdbc:mysql://myproject-mysql:3306/myprojectdb -e SPRING_DATASOURCE_USERNAME=root -e SPRING_DATASOURCE_PASSWORD=2702 myproject1-app:latest
+          docker run -d --name myproject1-container --network myproject-network \
+            -p 8080:8080 \
+            -e SPRING_DATASOURCE_URL=jdbc:mysql://myproject-mysql:3306/myprojectdb \
+            -e SPRING_DATASOURCE_USERNAME=root \
+            -e SPRING_DATASOURCE_PASSWORD=2702 \
+            -v /tmp/shared_data:/app/shared_data myproject1-app:latest
           echo "Spring Boot application is running."
 
       # 11. Kiểm tra trạng thái container
@@ -157,7 +167,21 @@ jobs:
           docker inspect myproject-mysql || echo "Failed to inspect MySQL container"
           echo "Inspection completed."
 
-      # 13. Kiểm tra log chi tiết của ứng dụng Spring Boot
+      # 13. Kiểm tra dữ liệu chia sẻ giữa MySQL, Spring Boot và máy host
+      - name: Check Shared Data Between Containers and Host
+        run: |
+          echo "Checking files in shared data directory on host..."
+          ls -al /tmp/shared_data
+
+          echo "Checking files in shared data directory in MySQL container..."
+          docker exec myproject-mysql ls -al /var/lib/mysql/shared_data
+
+          echo "Checking files in shared data directory in Spring Boot container..."
+          docker exec myproject1-container ls -al /app/shared_data
+
+          echo "Data sharing between containers and host checked."
+
+      # 14. Kiểm tra log chi tiết của ứng dụng Spring Boot
       # Lấy log từ container chạy ứng dụng Spring Boot để kiểm tra trạng thái khởi động.
       - name: Check Detailed Spring Boot Logs
         run: |
@@ -168,7 +192,7 @@ jobs:
           docker logs myproject1-container || echo "Failed to retrieve Spring Boot logs" #docker logs -f để xem chi tiết log Spring Boot
           echo "Spring Boot logs checked."
 
-      # 14. Chạy kiểm tra sức khỏe (health check) của ứng dụng với curl
+      # 15. Chạy kiểm tra sức khỏe (health check) của ứng dụng với curl
       # Chờ ứng dụng Spring Boot khởi động trong 60 giây, sau đó kiểm tra tình trạng sức khỏe qua endpoint /actuator/health.
       # curl -v hiển thị thông tin chi tiết của request và response.
       - name: Run Health Check
@@ -181,3 +205,5 @@ jobs:
           echo "Running health check on the application..."
           curl -v http://localhost:8080/actuator/health || echo "Health check failed"
           echo "Health check completed."
+
+

@@ -127,7 +127,21 @@ jobs:
           docker inspect myproject-mysql || echo "Failed to inspect MySQL container"
           echo "Inspection completed."
 
-      # 11. Kiểm tra log của tất cả các container
+      # 11. Kiểm tra dữ liệu chia sẻ giữa MySQL, Spring Boot và máy host
+      - name: Check Shared Data Between Containers and Host
+        run: |
+          echo "Checking files in shared data directory on host..."
+          ls -al /tmp/shared_data
+
+          echo "Checking files in shared data directory in MySQL container..."
+          docker exec myproject-mysql ls -al /var/lib/mysql/shared_data
+
+          echo "Checking files in shared data directory in Spring Boot container..."
+          docker exec myproject1-container ls -al /app/shared_data
+
+          echo "Data sharing between containers and host checked."
+
+      # 12. Kiểm tra log của tất cả các container
       # Lấy log từ container chạy ứng dụng Spring Boot và MySQL để kiểm tra trạng thái khởi động.
       - name: Check All Container Logs
         run: |
@@ -136,7 +150,7 @@ jobs:
           docker logs myproject-mysql --details --timestamps || echo "Failed to retrieve MySQL logs"
           echo "All container logs checked."
 
-      # 12. Chạy kiểm tra sức khỏe (health check) của ứng dụng với curl
+      # 13. Chạy kiểm tra sức khỏe (health check) của ứng dụng với curl
       # Chờ ứng dụng Spring Boot khởi động trong 60 giây, sau đó kiểm tra tình trạng sức khỏe qua endpoint /actuator/health.
       # curl -v hiển thị thông tin chi tiết của request và response.
       - name: Run Health Check
