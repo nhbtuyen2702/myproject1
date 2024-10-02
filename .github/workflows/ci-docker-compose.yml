@@ -62,7 +62,28 @@ jobs:
           ls -al
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      # 5. Cài đặt Docker Compose
+      # 5. Build Docker image
+      # Build Docker image từ Dockerfile trong repository và gán thẻ 'myproject1-app:latest'.
+      - name: Build Docker Image
+        run: |
+          echo "Building Docker image..."
+          echo "Current working directory: $(pwd)"
+          echo "Listing all files and directories in current path:"
+          ls -al
+          docker build -t myproject1-app:latest .
+          echo "Docker image build completed."
+
+      # 6. Liệt kê Docker image
+      # Kiểm tra và liệt kê tất cả các image đã được tạo trên môi trường Docker để đảm bảo image được tạo thành công.
+      - name: List Docker Images
+        run: |
+          echo "Listing Docker images to verify build..."
+          echo "Current working directory: $(pwd)"
+          echo "Listing all files and directories in current path:"
+          ls -al
+          docker images
+
+      # 7. Cài đặt Docker Compose
       # Cài đặt Docker Compose phiên bản mới nhất để có thể sử dụng trong các bước tiếp theo.
       - name: Install Docker Compose
         run: |
@@ -72,7 +93,7 @@ jobs:
           docker-compose version  # Kiểm tra phiên bản Docker Compose đã cài đặt
           echo "Docker Compose installed."
 
-      # 6. Sử dụng Docker Compose để chạy MySQL và Spring Boot
+      # 8. Sử dụng Docker Compose để chạy MySQL và Spring Boot
       # File `docker-compose.yml` sẽ được sử dụng để khởi động cả MySQL và Spring Boot trong cùng network.
       - name: Run Docker Compose
         run: |
@@ -83,7 +104,7 @@ jobs:
           docker-compose -f docker-compose.yml up -d --build  # Khởi động MySQL và Spring Boot trong chế độ detached
           echo "Docker Compose started."
 
-      # 7. Chạy kiểm tra trạng thái của các container
+      # 9. Chạy kiểm tra trạng thái của các container
       # Liệt kê tất cả các container để kiểm tra trạng thái của chúng sau khi Docker Compose khởi động
       - name: Check Running Docker Containers
         run: |
@@ -91,7 +112,7 @@ jobs:
           docker ps -a
           echo "Container status checked."
 
-      # 8. Kiểm tra log của tất cả các container
+      # 10. Kiểm tra log của tất cả các container
       # Lấy log từ container chạy ứng dụng Spring Boot và MySQL để kiểm tra trạng thái khởi động.
       - name: Check All Container Logs
         run: |
@@ -100,7 +121,7 @@ jobs:
           docker logs myproject-mysql --details --timestamps || echo "Failed to retrieve MySQL logs"
           echo "All container logs checked."
 
-      # 9. Kiểm tra sức khỏe của ứng dụng Spring Boot
+      # 11. Kiểm tra sức khỏe của ứng dụng Spring Boot
       # Sử dụng `curl` để kiểm tra endpoint /actuator/health sau khi Spring Boot đã khởi động
       - name: Run Health Check
         run: |
