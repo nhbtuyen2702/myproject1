@@ -79,11 +79,11 @@ jobs:
           docker run -d --name myproject1-container -p 8080:8080 --link myproject-mysql:mysql myproject1-app:latest
           echo "Spring Boot application is running."
 
-      # 11. Kiểm tra log của ứng dụng Spring Boot
-      - name: Check Spring Boot Logs
+      # 11. Kiểm tra log chi tiết của ứng dụng Spring Boot
+      - name: Check Detailed Spring Boot Logs
         run: |
-          echo "Checking Spring Boot logs..."
-          docker logs myproject1-container || echo "Failed to retrieve Spring Boot logs"
+          echo "Checking detailed logs of the Spring Boot application..."
+          docker logs -f myproject1-container || echo "Failed to retrieve Spring Boot logs"
           echo "Spring Boot logs checked."
 
       # 12. Chạy kiểm tra sức khỏe (health check) của ứng dụng với curl
