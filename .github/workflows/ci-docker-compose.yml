@@ -117,7 +117,7 @@ jobs:
       - name: Check All Container Logs
         run: |
           echo "Checking logs of all containers..."
-          docker logs myproject1-app --details --timestamps || echo "Failed to retrieve Spring Boot logs"
+          docker logs -f myproject1-app --details --timestamps || echo "Failed to retrieve Spring Boot logs"
           docker logs myproject-mysql --details --timestamps || echo "Failed to retrieve MySQL logs"
           echo "All container logs checked."
 
