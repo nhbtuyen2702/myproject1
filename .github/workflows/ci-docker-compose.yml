@@ -101,7 +101,16 @@ jobs:
           echo "Current working directory: $(pwd)"
           echo "Listing all files and directories in current path:"
           ls -al
-          sudo chown -R 999:999 /tmp/shared_data
+          
+          # Tạo thư mục shared_data nếu chưa tồn tại
+          if [ ! -d /tmp/shared_data ]; then
+            echo "Creating /tmp/shared_data directory..."
+            sudo mkdir -p /tmp/shared_data
+          fi
+          # Đảm bảo quyền truy cập
+          sudo chown -R 999:999 /tmp/shared_data  # Thêm quyền thích hợp cho thư mục chia sẻ
+          
+          
           docker-compose -f docker-compose.yml up -d --build  # Khởi động MySQL và Spring Boot trong chế độ detached
           echo "Docker Compose started."
 
