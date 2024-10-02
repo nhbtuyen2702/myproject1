@@ -1,5 +1,5 @@
 # Tên của workflow này để dễ nhận diện
-name: Build, Test, and Deploy Spring Boot Application with Docker Compose
+name: Build, Test, and Deploy Spring Boot Application with Docker
 
 # Kích hoạt workflow khi có sự kiện push hoặc pull request lên nhánh master
 on:
@@ -59,50 +59,45 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/myproject1:latest
           echo "Docker image pushed successfully."
 
-      # 8. Cài đặt Docker Compose
-      - name: Install Docker Compose
+      # 8. Chạy MySQL container
+      - name: Run MySQL Container
         run: |
-          echo "Installing Docker Compose..."
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-          docker-compose version  # Xác nhận Docker Compose đã được cài đặt
-          echo "Docker Compose installed."
+          echo "Running MySQL container..."
+          docker run -d --name myproject-mysql -e MYSQL_ROOT_PASSWORD=2702 -e MYSQL_DATABASE=myprojectdb -p 3306:3306 mysql:8.0
+          echo "MySQL container is running."
 
-      # 9. Thiết lập Docker Compose
-      - name: Set up Docker Compose
+      # 9. Đợi MySQL khởi động
+      - name: Wait for MySQL to be ready
         run: |
-          echo "Starting Docker Compose with docker-compose.yml..."
-          docker-compose -f docker-compose.yml up -d --build
-          echo "Docker Compose started."
+          echo "Waiting for MySQL to be ready..."
+          sleep 30  # Thời gian chờ để MySQL khởi động
 
-      # 10. Kiểm tra trạng thái của tất cả container
-      - name: Check Running Docker Containers
+      # 10. Chạy ứng dụng Spring Boot với Docker run
+      - name: Run Spring Boot Container with Docker Run
         run: |
-          echo "Listing all running Docker containers..."
-          docker ps -a  # Liệt kê tất cả các container để kiểm tra trạng thái
-          echo "Container status checked."
+          echo "Running Spring Boot application with Docker Run..."
+          docker run -d --name myproject1-container -p 8080:8080 --link myproject-mysql:mysql myproject1-app:latest
+          echo "Spring Boot application is running."
 
-      # 11. Kiểm tra log của tất cả các container (bao gồm cả MySQL và Spring Boot)
-      - name: Check All Container Logs
+      # 11. Kiểm tra log của ứng dụng Spring Boot
+      - name: Check Spring Boot Logs
         run: |
-          echo "Checking logs of all containers..."
-          docker logs myproject1-app --details --timestamps || echo "Failed to retrieve Spring Boot logs"
-          docker logs myproject-mysql --details --timestamps || echo "Failed to retrieve MySQL logs"
-          echo "All container logs checked."
+          echo "Checking Spring Boot logs..."
+          docker logs myproject1-container || echo "Failed to retrieve Spring Boot logs"
+          echo "Spring Boot logs checked."
 
-      # 12. Hiển thị thông tin chi tiết các container (để debug trạng thái)
-      - name: Inspect Docker Containers
-        run: |
-          echo "Inspecting all containers for additional details..."
-          docker inspect myproject1-app || echo "Failed to inspect Spring Boot container"
-          docker inspect myproject-mysql || echo "Failed to inspect MySQL container"
-          echo "Inspection completed."
-
-      # 13. Chạy kiểm tra sức khỏe (health check) của ứng dụng với debug
+      # 12. Chạy kiểm tra sức khỏe (health check) của ứng dụng với curl
       - name: Run Health Check
         run: |
           echo "Waiting for the application to be ready..."
-          sleep 120  # Đợi thêm thời gian để ứng dụng Spring Boot khởi động (tăng từ 60s lên 120s)
+          sleep 60  # Thời gian chờ để ứng dụng khởi động
           echo "Running health check on the application..."
-          curl -v http://localhost:8080/swagger-ui.html || echo "Health check failed"
+          curl -v http://localhost:8080/actuator/health || echo "Health check failed"
           echo "Health check completed."
+
+      # 13. Kiểm tra trạng thái container
+      - name: Check Running Docker Containers
+        run: |
+          echo "Listing all running Docker containers..."
+          docker ps -a
+          echo "Container status checked."
