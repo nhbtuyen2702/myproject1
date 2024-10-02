@@ -23,7 +23,7 @@ jobs:
       - name: List files after checkout
         run: |
           echo "Current working directory: $(pwd)"
-          echo "Listing all files and directories in current path after checkout:"
+          echo "Listing all files and directories in current path:"
           ls -al
 
       # 2. Thiết lập JDK
@@ -38,7 +38,7 @@ jobs:
       - name: List files after setting up JDK
         run: |
           echo "Current working directory: $(pwd)"
-          echo "Listing all files and directories in current path after setting up JDK:"
+          echo "Listing all files and directories in current path:"
           ls -al
 
       # 3. Build ứng dụng với Maven
@@ -48,7 +48,7 @@ jobs:
         run: |
           echo "Building the project using Maven..."
           echo "Current working directory: $(pwd)"
-          echo "Listing all files and directories in current path before building:"
+          echo "Listing all files and directories in current path:"
           ls -al
           mvn clean install
           echo "Maven build completed."
@@ -58,7 +58,7 @@ jobs:
       - name: Log in to Docker Hub
         run: |
           echo "Current working directory: $(pwd)"
-          echo "Listing all files and directories in current path before Docker login:"
+          echo "Listing all files and directories in current path:"
           ls -al
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
@@ -99,20 +99,35 @@ jobs:
         run: |
           echo "Starting Docker Compose with docker-compose.yml..."
           echo "Current working directory: $(pwd)"
-          echo "Listing all files and directories in current path before running Docker Compose:"
+          echo "Listing all files and directories in current path:"
           ls -al
           docker-compose -f docker-compose.yml up -d --build  # Khởi động MySQL và Spring Boot trong chế độ detached
           echo "Docker Compose started."
 
-      # 9. Chạy kiểm tra trạng thái của các container
-      # Liệt kê tất cả các container để kiểm tra trạng thái của chúng sau khi Docker Compose khởi động
+      # 9. Kiểm tra trạng thái container
+      # Liệt kê tất cả các container để kiểm tra trạng thái, xem container nào đang chạy hoặc đã dừng.
       - name: Check Running Docker Containers
         run: |
           echo "Listing all running Docker containers..."
+          echo "Current working directory: $(pwd)"
+          echo "Listing all files and directories in current path:"
+          ls -al
           docker ps -a
           echo "Container status checked."
 
-      # 10. Kiểm tra log của tất cả các container
+      # 10. Xem chi tiết các container đang chạy (bổ sung để kiểm tra thêm chi tiết)
+      # Thêm log để xem các thông tin chi tiết của container (bao gồm cả MySQL và Spring Boot).
+      - name: Inspect Docker Containers
+        run: |
+          echo "Inspecting all containers for additional details..."
+          echo "Current working directory: $(pwd)"
+          echo "Listing all files and directories in current path:"
+          ls -al
+          docker inspect myproject1-container || echo "Failed to inspect Spring Boot container"
+          docker inspect myproject-mysql || echo "Failed to inspect MySQL container"
+          echo "Inspection completed."
+
+      # 11. Kiểm tra log của tất cả các container
       # Lấy log từ container chạy ứng dụng Spring Boot và MySQL để kiểm tra trạng thái khởi động.
       - name: Check All Container Logs
         run: |
@@ -121,12 +136,16 @@ jobs:
           docker logs myproject-mysql --details --timestamps || echo "Failed to retrieve MySQL logs"
           echo "All container logs checked."
 
-      # 11. Kiểm tra sức khỏe của ứng dụng Spring Boot
-      # Sử dụng `curl` để kiểm tra endpoint /actuator/health sau khi Spring Boot đã khởi động
+      # 12. Chạy kiểm tra sức khỏe (health check) của ứng dụng với curl
+      # Chờ ứng dụng Spring Boot khởi động trong 60 giây, sau đó kiểm tra tình trạng sức khỏe qua endpoint /actuator/health.
+      # curl -v hiển thị thông tin chi tiết của request và response.
       - name: Run Health Check
         run: |
           echo "Waiting for the application to be ready..."
-          sleep 60  # Đợi 60 giây để ứng dụng Spring Boot khởi động hoàn toàn
+          echo "Current working directory: $(pwd)"
+          echo "Listing all files and directories in current path:"
+          ls -al
+          sleep 60  # Thời gian chờ để ứng dụng khởi động
           echo "Running health check on the application..."
           curl -v http://localhost:8080/actuator/health || echo "Health check failed"
           echo "Health check completed."
