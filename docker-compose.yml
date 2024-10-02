@@ -22,7 +22,7 @@ services:
   # Dịch vụ ứng dụng Spring Boot
   app:
     image: myproject1-app:latest  # Sử dụng Docker image của ứng dụng Spring Boot với tag 'latest'
-    container_name: myproject1-app  # Đặt tên container là myproject1-app
+    container_name: myproject1-container  # Đặt tên container là myproject1-app
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/myprojectdb  # URL kết nối đến MySQL, 'db' là tên dịch vụ MySQL
       SPRING_DATASOURCE_USERNAME: root  # Tên đăng nhập MySQL
