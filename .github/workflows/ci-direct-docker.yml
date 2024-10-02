@@ -67,16 +67,11 @@ jobs:
       # Build Docker image từ Dockerfile trong repository và gán thẻ 'myproject1-app:latest'.
       - name: Build Docker Image
         run: |
-          echo "Building Docker image without Dockerfile..."
+          echo "Building Docker image..."
           echo "Current working directory: $(pwd)"
           echo "Listing all files and directories in current path:"
           ls -al
-          docker build -t myproject1-app:latest - <<EOF
-          FROM openjdk:17-jdk-slim
-          COPY target/myproject1-0.0.1-SNAPSHOT.jar /app/myproject1.jar
-          WORKDIR /app
-          ENTRYPOINT ["java", "-jar", "myproject1.jar"]
-          EOF
+          docker build -t myproject1-app:latest .
           echo "Docker image build completed."
 
       # 6. Liệt kê Docker image
@@ -124,7 +119,7 @@ jobs:
           echo "Current working directory: $(pwd)"
           echo "Listing all files and directories in current path:"
           ls -al
-          sleep 15  # Thời gian chờ để MySQL khởi động
+          sleep 30  # Thời gian chờ để MySQL khởi động
           echo "MySQL should be ready now."
 
       # 10. Chạy ứng dụng Spring Boot với Docker run, trong cùng network
@@ -160,7 +155,7 @@ jobs:
           echo "Current working directory: $(pwd)"
           echo "Listing all files and directories in current path:"
           ls -al
-          sleep 15  # Thời gian chờ để ứng dụng khởi động
+          sleep 60  # Thời gian chờ để ứng dụng khởi động
           echo "Running health check on the application..."
           curl -v http://localhost:8080/actuator/health || echo "Health check failed"
           echo "Health check completed."

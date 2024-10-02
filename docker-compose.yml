@@ -1,33 +1,37 @@
-version: '3.8'
-services:
-  app:
-    image: myproject1-app:latest
-    container_name: myproject1-app
-    ports:
-      - "8080:8080"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/myprojectdb
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: 2702
-    depends_on:
-      - db
-    networks:
-      - mynetwork
+version: '3.8'  # Sử dụng phiên bản Docker Compose 3.8, tương thích với hầu hết các tính năng hiện tại
 
+services:
+  # Dịch vụ MySQL
   db:
-    image: mysql:8.0
-    container_name: myproject-mysql
+    image: mysql:8.0  # Sử dụng image MySQL phiên bản 8.0
+    container_name: myproject-mysql  # Đặt tên container là myproject-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: 2702
-      MYSQL_DATABASE: myprojectdb
+      MYSQL_ROOT_PASSWORD: 2702  # Đặt mật khẩu root cho MySQL là '2702'
+      MYSQL_DATABASE: myprojectdb  # Tự động tạo cơ sở dữ liệu 'myprojectdb' khi MySQL khởi động
     ports:
-      - "3306:3306"
+      - "3306:3306"  # Ánh xạ cổng 3306 của host tới cổng 3306 của container
     networks:
-      - mynetwork
+      - mynetwork  # Đặt container này trong Docker network 'mynetwork' để nó có thể kết nối với các container khác
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
-      interval: 10s
-      retries: 5
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]  # Kiểm tra MySQL đã sẵn sàng chưa bằng lệnh 'ping'
+      interval: 10s  # Kiểm tra mỗi 10 giây
+      retries: 5  # Thử lại 5 lần nếu thất bại
+
+  # Dịch vụ ứng dụng Spring Boot
+  app:
+    image: myproject1-app:latest  # Sử dụng Docker image của ứng dụng Spring Boot với tag 'latest'
+    container_name: myproject1-app  # Đặt tên container là myproject1-app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/myprojectdb  # URL kết nối đến MySQL, 'db' là tên dịch vụ MySQL
+      SPRING_DATASOURCE_USERNAME: root  # Tên đăng nhập MySQL
+      SPRING_DATASOURCE_PASSWORD: 2702  # Mật khẩu MySQL
+    ports:
+      - "8080:8080"  # Ánh xạ cổng 8080 của container ra cổng 8080 của host để truy cập ứng dụng từ bên ngoài
+    depends_on:
+      - db  # Đảm bảo container ứng dụng khởi động sau khi MySQL đã sẵn sàng
+    networks:
+      - mynetwork  # Container này cũng sẽ nằm trong Docker network 'mynetwork'
 
 networks:
   mynetwork:
+    driver: bridge  # Tạo một mạng Docker với driver 'bridge' để các container có thể giao tiếp với nhau
