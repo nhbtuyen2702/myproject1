@@ -124,6 +124,12 @@ jobs:
             -p 3306:3306 mysql:8.0
           echo "MySQL container is running."
 
+      # Thêm step kiểm tra log chi tiết của MySQL
+      - name: Check MySQL Logs
+        run: |
+          echo "Checking MySQL container logs..."
+          docker logs myproject-mysql || echo "Failed to retrieve MySQL logs"
+
       # 9. Đợi MySQL khởi động và sẵn sàng
       # Chờ 30 giây để MySQL có đủ thời gian khởi động và sẵn sàng chấp nhận kết nối.
       - name: Wait for MySQL to be ready
