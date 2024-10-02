@@ -50,33 +50,32 @@ jobs:
           echo "Listing Docker images to verify build..."
           docker images
 
-      # 7. Tag và push Docker image lên Docker Hub
-      - name: Tag and Push Docker Image
+      # 7. Tạo Docker network
+      - name: Create Docker Network
         run: |
-          echo "Tagging Docker image: myproject1-app:latest..."
-          docker tag myproject1-app:latest ${{ secrets.DOCKER_USERNAME }}/myproject1:latest
-          echo "Pushing Docker image to Docker Hub..."
-          docker push ${{ secrets.DOCKER_USERNAME }}/myproject1:latest
-          echo "Docker image pushed successfully."
+          echo "Creating Docker network..."
+          docker network create myproject-network
+          echo "Docker network created."
 
-      # 8. Chạy MySQL container
+      # 8. Chạy MySQL container trong Docker network
       - name: Run MySQL Container
         run: |
           echo "Running MySQL container..."
-          docker run -d --name myproject-mysql -e MYSQL_ROOT_PASSWORD=2702 -e MYSQL_DATABASE=myprojectdb -p 3306:3306 mysql:8.0
+          docker run -d --name myproject-mysql --network myproject-network -e MYSQL_ROOT_PASSWORD=2702 -e MYSQL_DATABASE=myprojectdb -p 3306:3306 mysql:8.0
           echo "MySQL container is running."
 
-      # 9. Đợi MySQL khởi động
+      # 9. Đợi MySQL khởi động và sẵn sàng
       - name: Wait for MySQL to be ready
         run: |
           echo "Waiting for MySQL to be ready..."
           sleep 30  # Thời gian chờ để MySQL khởi động
+          echo "MySQL should be ready now."
 
-      # 10. Chạy ứng dụng Spring Boot với Docker run
+      # 10. Chạy ứng dụng Spring Boot với Docker run, trong cùng network
       - name: Run Spring Boot Container with Docker Run
         run: |
           echo "Running Spring Boot application with Docker Run..."
-          docker run -d --name myproject1-container -p 8080:8080 --link myproject-mysql:mysql myproject1-app:latest
+          docker run -d --name myproject1-container --network myproject-network -p 8080:8080 -e SPRING_DATASOURCE_URL=jdbc:mysql://myproject-mysql:3306/myprojectdb -e SPRING_DATASOURCE_USERNAME=root -e SPRING_DATASOURCE_PASSWORD=2702 myproject1-app:latest
           echo "Spring Boot application is running."
 
       # 11. Kiểm tra log chi tiết của ứng dụng Spring Boot
