@@ -78,18 +78,18 @@ jobs:
           docker run -d --name myproject1-container --network myproject-network -p 8080:8080 -e SPRING_DATASOURCE_URL=jdbc:mysql://myproject-mysql:3306/myprojectdb -e SPRING_DATASOURCE_USERNAME=root -e SPRING_DATASOURCE_PASSWORD=2702 myproject1-app:latest
           echo "Spring Boot application is running."
 
-      # 11. Kiểm tra log chi tiết của ứng dụng Spring Boot
+      # 11. Kiểm tra log chi tiết của ứng dụng Spring Boot (bỏ -f)
       - name: Check Detailed Spring Boot Logs
         run: |
           echo "Checking detailed logs of the Spring Boot application..."
-          docker logs -f myproject1-container || echo "Failed to retrieve Spring Boot logs"
+          docker logs myproject1-container || echo "Failed to retrieve Spring Boot logs"
           echo "Spring Boot logs checked."
 
       # 12. Chạy kiểm tra sức khỏe (health check) của ứng dụng với curl
       - name: Run Health Check
         run: |
           echo "Waiting for the application to be ready..."
-          sleep 60  # Thời gian chờ để ứng dụng khởi động
+          sleep 120  # Tăng thời gian chờ để ứng dụng khởi động
           echo "Running health check on the application..."
           curl -v http://localhost:8080/actuator/health || echo "Health check failed"
           echo "Health check completed."
