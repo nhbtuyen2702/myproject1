@@ -116,13 +116,13 @@ jobs:
           fi
           # Đảm bảo quyền truy cập
           sudo chown -R 999:999 /tmp/shared_data  # Thêm quyền thích hợp cho thư mục chia sẻ
-    
-    
-    
+          
+          
+          
           docker run -d --name myproject-mysql --network myproject-network \
             -e MYSQL_ROOT_PASSWORD=2702 \
             -e MYSQL_DATABASE=myprojectdb \
-            -v /tmp/shared_data:/shared_data \  # Sử dụng thư mục khác để chia sẻ
+            -v /tmp/shared_data:/shared_data \
             -p 3306:3306 mysql:8.0
           echo "MySQL container is running."
 
