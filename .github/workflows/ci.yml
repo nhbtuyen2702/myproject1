@@ -104,5 +104,5 @@ jobs:
           echo "Waiting for the application to be ready..."
           sleep 120  # Đợi thêm thời gian để ứng dụng Spring Boot khởi động (tăng từ 60s lên 120s)
           echo "Running health check on the application..."
-          curl -v http://localhost:8080/actuator/health || echo "Health check failed"
+          curl -v http://localhost:8080/swagger-ui.html || echo "Health check failed"
           echo "Health check completed."
