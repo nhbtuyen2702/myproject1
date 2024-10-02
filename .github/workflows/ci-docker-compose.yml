@@ -104,17 +104,6 @@ jobs:
           docker-compose -f docker-compose.yml up -d --build  # Khởi động MySQL và Spring Boot trong chế độ detached
           echo "Docker Compose started."
 
-      # 9. Đợi MySQL khởi động và sẵn sàng
-      # Chờ 30 giây để MySQL có đủ thời gian khởi động và sẵn sàng chấp nhận kết nối.
-      - name: Wait for MySQL to be ready
-        run: |
-          echo "Waiting for MySQL to be ready..."
-          echo "Current working directory: $(pwd)"
-          echo "Listing all files and directories in current path:"
-          ls -al
-          sleep 30  # Thời gian chờ để MySQL khởi động
-          echo "MySQL should be ready now."
-
       # 9. Chạy kiểm tra trạng thái của các container
       # Liệt kê tất cả các container để kiểm tra trạng thái của chúng sau khi Docker Compose khởi động
       - name: Check Running Docker Containers
