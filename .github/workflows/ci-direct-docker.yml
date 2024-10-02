@@ -108,7 +108,8 @@ jobs:
           echo "Current working directory: $(pwd)"
           echo "Listing all files and directories in current path:"
           ls -al
-             docker run -d --name myproject-mysql --network myproject-network \
+          sudo chown -R 999:999 /tmp/shared_data
+          docker run -d --name myproject-mysql --network myproject-network \
             -e MYSQL_ROOT_PASSWORD=2702 \
             -e MYSQL_DATABASE=myprojectdb \
             -v /tmp/shared_data:/var/lib/mysql/shared_data \

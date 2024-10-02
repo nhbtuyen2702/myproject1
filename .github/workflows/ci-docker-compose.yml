@@ -101,6 +101,7 @@ jobs:
           echo "Current working directory: $(pwd)"
           echo "Listing all files and directories in current path:"
           ls -al
+          sudo chown -R 999:999 /tmp/shared_data
           docker-compose -f docker-compose.yml up -d --build  # Khởi động MySQL và Spring Boot trong chế độ detached
           echo "Docker Compose started."
 
