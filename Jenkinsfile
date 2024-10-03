@@ -68,20 +68,31 @@ pipeline {
             }
         }
 
-        // 5. Xóa image Docker cũ và images bị dangling trước khi xây dựng lại image mới
+         // 5. Xóa image Docker cũ và images bị dangling trước khi xây dựng lại image mới
         stage('Remove Existing Docker Image') {
             steps {
                 echo "Removing existing Docker image if it exists and dangling images..."
                 script {
                     bat '''
-                    docker rmi myproject1-app:latest || echo "No existing image to remove"
-                    docker rmi $(docker images -f "dangling=true" -q) || echo "No dangling images to remove"
+                    docker images -q myproject1-app:latest && docker rmi myproject1-app:latest || echo "No existing image to remove"
                     '''
                 }
             }
         }
 
-        // 6. Xây dựng image Docker từ Dockerfile với cờ --rm để xóa các container trung gian
+        // 6. Xóa dangling images nếu có
+        stage('Remove Dangling Images') {
+            steps {
+                echo "Removing dangling images..."
+                script {
+                    bat '''
+                    for /F "tokens=*" %i in ('docker images -f "dangling=true" -q') do docker rmi %i || echo "No dangling images to remove"
+                    '''
+                }
+            }
+        }
+
+        // 7. Xây dựng image Docker từ Dockerfile với cờ --rm để xóa các container trung gian
         stage('Build Docker Image') {
             steps {
                 echo "Building Docker image..."
