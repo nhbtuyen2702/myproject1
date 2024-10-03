@@ -2,28 +2,28 @@ pipeline {
     agent any
 
     environment {
-        JAVA_HOME = '/usr/lib/jvm/java-17-openjdk-amd64'
+        JAVA_HOME = 'C:\\Program Files\\Java\\jdk-17'
     }
 
     stages {
         stage('Checkout Code') {
             steps {
                 echo "Checking out code from repository..."
-                checkout scm  // Lấy mã nguồn từ SCM (GitHub/GitLab)
+                checkout scm
             }
         }
 
         stage('Set up JDK') {
             steps {
                 echo "Setting up JDK 17..."
-                sh 'java -version'  // Kiểm tra phiên bản Java
+                bat 'java -version'  // Sử dụng lệnh 'bat' thay vì 'sh' cho Windows
             }
         }
 
         stage('Build with Maven') {
             steps {
                 echo "Building project with Maven..."
-                sh 'mvn clean install || echo "Maven build failed"'  // Thực thi lệnh Maven
+                bat 'mvn clean install'  // Sử dụng lệnh 'bat' cho Windows
             }
         }
     }
