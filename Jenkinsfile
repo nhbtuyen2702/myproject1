@@ -3,9 +3,7 @@ pipeline {
 
     environment {
         JAVA_HOME = 'C:\\Program Files\\Java\\jdk-17'
-         DOCKERHUB_USERNAME = credentials('0933721593')  // Thay bằng đúng ID của DockerHub
-         DOCKERHUB_PASSWORD = credentials('0933721593')  // Thay bằng đúng ID của DockerHub
-
+        DOCKERHUB_CREDENTIALS = credentials('bf3a492e-d7dd-4eb3-9eaa-ef3d843fc892')  // Sử dụng đúng ID của DockerHub đã tạo
     }
 
     stages {
@@ -30,28 +28,30 @@ pipeline {
             }
         }
 
-       stage('Login to Docker Hub') {
+        stage('Login to Docker Hub') {
             steps {
                 echo "Logging into Docker Hub..."
-                bat '''
-                echo %DOCKERHUB_PASSWORD% | docker login -u %DOCKERHUB_USERNAME% --password-stdin
-                '''
+                script {
+                    bat '''
+                    echo %DOCKERHUB_CREDENTIALS_PSW% | docker login -u %DOCKERHUB_CREDENTIALS_USR% --password-stdin
+                    '''
+                }
             }
-       }
+        }
 
         stage('Build Docker Image') {
             steps {
                 echo "Building Docker image..."
                 bat 'docker build -t myproject1-app:latest .'
             }
-       }
+        }
 
-       stage('Create Docker Network') {
-                steps {
-                    echo "Creating Docker network..."
-                    bat 'docker network create myproject-network || echo "Network already exists"'
-                }
-       }
+        stage('Create Docker Network') {
+            steps {
+                echo "Creating Docker network..."
+                bat 'docker network create myproject-network || echo "Network already exists"'
+            }
+        }
     }
 
     post {
