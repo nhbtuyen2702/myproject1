@@ -164,7 +164,7 @@ pipeline {
                 echo "Running Spring Boot application with Docker Run..."
                 script {
                     bat '''
-                    docker run -d --name myproject1-container -myproject-network-network myproject-network ^
+                    docker run -d --name myproject1-container --network myproject-network ^
                         -p 8080:8080 ^
                         -e SPRING_DATASOURCE_URL=jdbc:mysql://myproject-mysql:3306/myprojectdb ^
                         -e SPRING_DATASOURCE_USERNAME=root ^
