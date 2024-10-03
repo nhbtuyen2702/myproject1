@@ -145,13 +145,26 @@ pipeline {
             }
         }
 
+        // Thêm thời gian chờ trước khi khởi chạy Spring Boot container
+        stage('Wait for MySQL to be ready') {
+            steps {
+                echo "Waiting for MySQL to be ready..."
+                script {
+                    bat '''
+                    ping 127.0.0.1 -n 30 > nul
+                    echo "MySQL should be ready now."
+                    '''
+                }
+            }
+        }
+
         // 10. Khởi chạy ứng dụng Spring Boot với Docker
         stage('Run Spring Boot Container') {
             steps {
                 echo "Running Spring Boot application with Docker Run..."
                 script {
                     bat '''
-                    docker run -d --name myproject1-container --network myproject-network ^
+                    docker run -d --name myproject1-container -myproject-network-network myproject-network ^
                         -p 8080:8080 ^
                         -e SPRING_DATASOURCE_URL=jdbc:mysql://myproject-mysql:3306/myprojectdb ^
                         -e SPRING_DATASOURCE_USERNAME=root ^
