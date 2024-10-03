@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         JAVA_HOME = 'C:\\Program Files\\Java\\jdk-17'
-        DOCKERHUB_CREDENTIALS = credentials('bf3a492e-d7dd-4eb3-9eaa-ef3d843fc892')  // Sử dụng đúng ID của DockerHub đã tạo
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')  // Sử dụng đúng ID của DockerHub đã tạo
     }
 
     stages {
