@@ -77,19 +77,6 @@ pipeline {
             }
         }
 
-        // Bước 2: Đợi MySQL khởi động
-        stage('Wait for MySQL to be Ready') {
-            steps {
-                echo "Waiting for MySQL to be ready..."
-                script {
-                    bat '''
-                    echo "Waiting 30 seconds for MySQL to start..."
-                    timeout /T 30
-                    '''
-                }
-            }
-        }
-
         // Bước 3: Chạy Spring Boot container
         stage('Run Spring Boot Container') {
             steps {
