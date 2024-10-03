@@ -117,7 +117,6 @@ pipeline {
                 echo "Creating Docker network..."
                 script {
                     bat '''
-                    docker network rm myproject-network || echo "No existing network to remove"
                     docker network create myproject-network
                     echo "Docker network created successfully."
                     '''
