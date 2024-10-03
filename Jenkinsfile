@@ -118,12 +118,15 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            echo "Cleaning up Docker containers..."
-            sh 'docker stop myproject1-container myproject-mysql || true'
-            sh 'docker rm myproject1-container myproject-mysql || true'
-            sh 'docker network rm myproject-network || true'
-        }
-    }
+   post {
+       always {
+           node {
+               echo "Cleaning up Docker containers..."
+               sh 'docker stop myproject1-container myproject-mysql || true'
+               sh 'docker rm myproject1-container myproject-mysql || true'
+               sh 'docker network rm myproject-network || true'
+           }
+       }
+   }
+
 }
