@@ -23,7 +23,7 @@ pipeline {
             }
         }
 
-        // 2. Thiết lập JDK 17 để biên dịch ứng dụng
+        // 2. Thiết lập JDK
         stage('Set up JDK') {
             steps {
                 echo "Setting up JDK 17..."
@@ -39,7 +39,7 @@ pipeline {
             }
         }
 
-        // 3. Biên dịch và đóng gói ứng dụng với Maven
+        // 3. Build ứng dụng với Maven
         stage('Build with Maven') {
             steps {
                 echo "Building project with Maven..."
@@ -54,7 +54,7 @@ pipeline {
             }
         }
 
-        // 4. Đăng nhập vào Docker Hub
+        // 4. Đăng nhập Docker Hub
         stage('Login to Docker Hub') {
             steps {
                 echo "Logging into Docker Hub..."
@@ -68,7 +68,7 @@ pipeline {
             }
         }
 
-        // 5. Xây dựng image Docker từ Dockerfile
+        // 5. Build Docker image
         stage('Build Docker Image') {
             steps {
                 echo "Building Docker image..."
@@ -81,7 +81,7 @@ pipeline {
             }
         }
 
-        // 6. Liệt kê Docker images để kiểm tra
+        // 6. Liệt kê Docker images
         stage('List Docker Images') {
             steps {
                 echo "Listing Docker images to verify build..."
@@ -95,7 +95,7 @@ pipeline {
             }
         }
 
-        // 8. Tạo mạng Docker mới
+        // 7. Tạo Docker network
         stage('Create Docker Network') {
             steps {
                 echo "Creating Docker network..."
@@ -108,7 +108,7 @@ pipeline {
             }
         }
 
-        // 9. Khởi chạy MySQL container
+        // 8. Chạy MySQL container trong Docker network
         stage('Run MySQL Container') {
             steps {
                 echo "Running MySQL container..."
@@ -128,7 +128,7 @@ pipeline {
             }
         }
 
-        // Thêm thời gian chờ trước khi khởi chạy Spring Boot container
+        // 9. Đợi MySQL khởi động và sẵn sàng
         stage('Wait for MySQL to be ready') {
             steps {
                 echo "Waiting for MySQL to be ready..."
@@ -141,7 +141,7 @@ pipeline {
             }
         }
 
-        // 10. Khởi chạy ứng dụng Spring Boot với Docker
+        // 10. Chạy ứng dụng Spring Boot với Docker run, trong cùng network
         stage('Run Spring Boot Container') {
             steps {
                 echo "Running Spring Boot application with Docker Run..."
@@ -159,7 +159,7 @@ pipeline {
             }
         }
 
-        // 11. Kiểm tra trạng thái các container
+        // 11. Kiểm tra trạng thái container
         stage('Check Running Docker Containers') {
             steps {
                 echo "Listing all running Docker containers..."
@@ -172,7 +172,7 @@ pipeline {
             }
         }
 
-        // 12. Xem thông tin chi tiết của container
+        // 12. Xem chi tiết các container đang chạy (bổ sung để kiểm tra thêm chi tiết)
         stage('Inspect Docker Containers') {
             steps {
                 echo "Inspecting Docker containers for additional details..."
@@ -186,7 +186,7 @@ pipeline {
             }
         }
 
-        // 13. Kiểm tra dữ liệu chia sẻ giữa máy chủ và các container
+        // 13. Kiểm tra dữ liệu chia sẻ giữa MySQL, Spring Boot và máy host
         stage('Check Shared Data Between Containers and Host') {
             steps {
                 echo "Checking shared data between containers and host..."
@@ -204,7 +204,7 @@ pipeline {
             }
         }
 
-        // 14. Xem log chi tiết của ứng dụng Spring Boot
+        // 14. Kiểm tra log chi tiết của ứng dụng Spring Boot
         stage('Check Detailed Spring Boot Logs') {
             steps {
                 echo "Checking detailed logs of the Spring Boot application..."
@@ -217,7 +217,7 @@ pipeline {
             }
         }
 
-        // 15. Thực hiện kiểm tra sức khỏe (health check) cho ứng dụng
+        // 15.  Chạy kiểm tra sức khỏe (health check) của ứng dụng với curl
         stage('Run Health Check') {
             steps {
                 echo "Running health check on the Spring Boot application..."
