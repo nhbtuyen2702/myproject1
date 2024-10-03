@@ -3,6 +3,9 @@ pipeline {
 
     environment {
         JAVA_HOME = 'C:\\Program Files\\Java\\jdk-17'
+         DOCKERHUB_USERNAME = credentials('0933721593')  // Thay bằng đúng ID của DockerHub
+         DOCKERHUB_PASSWORD = credentials('0933721593')  // Thay bằng đúng ID của DockerHub
+
     }
 
     stages {
@@ -26,6 +29,22 @@ pipeline {
                 bat 'mvn clean install'  // Sử dụng lệnh 'bat' cho Windows
             }
         }
+
+       stage('Login to Docker Hub') {
+            steps {
+                echo "Logging into Docker Hub..."
+                bat '''
+                echo %DOCKERHUB_PASSWORD% | docker login -u %DOCKERHUB_USERNAME% --password-stdin
+                '''
+            }
+       }
+
+        stage('Build Docker Image') {
+            steps {
+                echo "Building Docker image..."
+                bat 'docker build -t myproject1-app:latest .'
+            }
+       }
 
        stage('Create Docker Network') {
                 steps {
