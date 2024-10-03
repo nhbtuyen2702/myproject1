@@ -68,11 +68,24 @@ pipeline {
             }
         }
 
-        // 5. Xây dựng image Docker từ Dockerfile
+        // 5. Xóa image Docker cũ và images bị dangling trước khi xây dựng lại image mới
+        stage('Remove Existing Docker Image') {
+            steps {
+                echo "Removing existing Docker image if it exists and dangling images..."
+                script {
+                    bat '''
+                    docker rmi myproject1-app:latest || echo "No existing image to remove"
+                    docker rmi $(docker images -f "dangling=true" -q) || echo "No dangling images to remove"
+                    '''
+                }
+            }
+        }
+
+        // 6. Xây dựng image Docker từ Dockerfile với cờ --rm để xóa các container trung gian
         stage('Build Docker Image') {
             steps {
                 echo "Building Docker image..."
-                bat 'docker build -t myproject1-app:latest .'
+                bat 'docker build --rm -t myproject1-app:latest .'
                 script {
                     bat '''
                     echo "Docker image built successfully."
@@ -81,7 +94,7 @@ pipeline {
             }
         }
 
-        // 6. Liệt kê Docker images để kiểm tra
+        // 7. Liệt kê Docker images để kiểm tra
         stage('List Docker Images') {
             steps {
                 echo "Listing Docker images to verify build..."
@@ -95,7 +108,7 @@ pipeline {
             }
         }
 
-        // 7. Dừng và xóa các container đang tồn tại (nếu có)
+        // 8. Dừng và xóa các container đang tồn tại (nếu có)
         stage('Remove Existing Containers') {
             steps {
                 echo "Stopping and removing existing Docker containers..."
@@ -111,7 +124,7 @@ pipeline {
             }
         }
 
-        // 8. Tạo mạng Docker mới
+        // 9. Tạo mạng Docker mới
         stage('Create Docker Network') {
             steps {
                 echo "Creating Docker network..."
@@ -125,7 +138,7 @@ pipeline {
             }
         }
 
-        // 9. Khởi chạy MySQL container
+        // 10. Khởi chạy MySQL container
         stage('Run MySQL Container') {
             steps {
                 echo "Running MySQL container..."
@@ -158,12 +171,14 @@ pipeline {
             }
         }
 
-        // 10. Khởi chạy ứng dụng Spring Boot với Docker
+        // 11. Khởi chạy ứng dụng Spring Boot với Docker
         stage('Run Spring Boot Container') {
             steps {
                 echo "Running Spring Boot application with Docker Run..."
                 script {
                     bat '''
+                    docker stop myproject1-container || echo "No container to stop"
+                    docker rm myproject1-container || echo "No container to remove"
                     docker run -d --name myproject1-container --network myproject-network ^
                         -p 8080:8080 ^
                         -e SPRING_DATASOURCE_URL=jdbc:mysql://myproject-mysql:3306/myprojectdb ^
@@ -176,7 +191,7 @@ pipeline {
             }
         }
 
-        // 11. Kiểm tra trạng thái các container
+        // 12. Kiểm tra trạng thái các container
         stage('Check Running Docker Containers') {
             steps {
                 echo "Listing all running Docker containers..."
@@ -189,7 +204,7 @@ pipeline {
             }
         }
 
-        // 12. Xem thông tin chi tiết của container
+        // 13. Xem thông tin chi tiết của container
         stage('Inspect Docker Containers') {
             steps {
                 echo "Inspecting Docker containers for additional details..."
@@ -203,7 +218,7 @@ pipeline {
             }
         }
 
-        // 13. Kiểm tra dữ liệu chia sẻ giữa máy chủ và các container
+        // 14. Kiểm tra dữ liệu chia sẻ giữa máy chủ và các container
         stage('Check Shared Data Between Containers and Host') {
             steps {
                 echo "Checking shared data between containers and host..."
@@ -221,7 +236,7 @@ pipeline {
             }
         }
 
-        // 14. Xem log chi tiết của ứng dụng Spring Boot
+        // 15. Xem log chi tiết của ứng dụng Spring Boot
         stage('Check Detailed Spring Boot Logs') {
             steps {
                 echo "Checking detailed logs of the Spring Boot application..."
@@ -234,7 +249,7 @@ pipeline {
             }
         }
 
-        // 15. Thực hiện kiểm tra sức khỏe (health check) cho ứng dụng
+        // 16. Thực hiện kiểm tra sức khỏe (health check) cho ứng dụng
         stage('Run Health Check') {
             steps {
                 echo "Running health check on the Spring Boot application..."
