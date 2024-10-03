@@ -100,7 +100,7 @@ jobs:
       # - `--network myproject-network`: Chạy container trong network vừa tạo.
       # - `-e MYSQL_ROOT_PASSWORD=2702`: Đặt mật khẩu cho tài khoản root của MySQL.
       # - `-e MYSQL_DATABASE=myprojectdb`: Tạo cơ sở dữ liệu tên 'myprojectdb' khi MySQL khởi động.
-      # - `-v /tmp/shared_data:/var/lib/mysql/shared_data`: Chia sẻ thư mục `/tmp/shared_data` trên host với `/var/lib/mysql/shared_data` trong container MySQL.
+      # - `-v /tmp/shared_data:/shared_data`: Chia sẻ thư mục `/tmp/shared_data` trên host với `/shared_data` trong container MySQL.
       # - `-p 3306:3306`: Ánh xạ cổng 3306 của container MySQL ra cổng 3306 của host.
       - name: Run MySQL Container
         run: |
