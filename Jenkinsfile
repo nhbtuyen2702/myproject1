@@ -74,12 +74,13 @@ pipeline {
                 echo "Checking if Docker image exists and overwriting if necessary..."
                 script {
                     bat '''
-                    if docker images -q myproject1-app:latest; then
+                    for /F "tokens=*" %i in ('docker images -q myproject1-app:latest') do set imgId=%i
+                    if defined imgId (
                         echo "Image exists, removing it..."
                         docker rmi myproject1-app:latest
-                    else
+                    ) else (
                         echo "No existing image found."
-                    fi
+                    )
 
                     echo "Building new Docker image..."
                     docker build --rm -t myproject1-app:latest .
