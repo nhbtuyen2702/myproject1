@@ -49,7 +49,12 @@ pipeline {
         stage('Create Docker Network') {
             steps {
                 echo "Creating Docker network..."
-                bat 'docker network create myproject-network1 || echo "Network already exists"'
+                script {
+                    bat '''
+                    docker network rm myproject-network || echo "No existing network to remove"
+                    docker network create myproject-network
+                    '''
+                }
             }
         }
 
@@ -62,7 +67,7 @@ pipeline {
                     if not exist C:\\tmp\\shared_data (
                         mkdir C:\\tmp\\shared_data
                     )
-                    docker run -d --name myproject-mysql --network myproject-network1 ^
+                    docker run -d --name myproject-mysql --network myproject-network ^
                         -e MYSQL_ROOT_PASSWORD=2702 ^
                         -e MYSQL_DATABASE=myprojectdb ^
                         -v C:\\tmp\\shared_data:/shared_data ^
@@ -91,7 +96,7 @@ pipeline {
                 echo "Running Spring Boot application with Docker Run..."
                 script {
                     bat '''
-                    docker run -d --name myproject1-container --network myproject-network1 ^
+                    docker run -d --name myproject1-container --network myproject-network ^
                         -p 8080:8080 ^
                         -e SPRING_DATASOURCE_URL=jdbc:mysql://myproject-mysql:3306/myprojectdb ^
                         -e SPRING_DATASOURCE_USERNAME=root ^
