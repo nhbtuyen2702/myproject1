@@ -134,7 +134,7 @@ pipeline {
                 echo "Waiting for MySQL to be ready..."
                 script {
                     bat '''
-                    ping 127.0.0.1 -n 10 > nul
+                    ping 127.0.0.1 -n 60 > nul
                     echo "MySQL should be ready now."
                     '''
                 }
@@ -223,7 +223,7 @@ pipeline {
                 echo "Running health check on the Spring Boot application..."
                 script {
                     bat '''
-                    ping 127.0.0.1 -n 10 > nul
+                    ping 127.0.0.1 -n 60 > nul
                     curl -v http://localhost:8080/actuator/health || echo "Health check failed"
                     echo "Health check completed successfully."
                     '''
