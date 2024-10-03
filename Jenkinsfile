@@ -74,7 +74,7 @@ pipeline {
                 echo "Checking if Docker image exists and overwriting if necessary..."
                 script {
                     bat '''
-                    for /F "tokens=*" %i in ('docker images -q myproject1-app:latest') do set imgId=%i
+                    for /F "tokens=*" %i in ("docker images -q myproject1-app:latest") do set imgId=%i
                     if defined imgId (
                         echo "Image exists, removing it..."
                         docker rmi myproject1-app:latest
@@ -90,19 +90,21 @@ pipeline {
             }
         }
 
+
         // 6. Kiểm tra và ghi đè container Docker nếu đã tồn tại
         stage('Check and Run Docker Container') {
             steps {
                 echo "Checking if Docker container exists and overwriting if necessary..."
                 script {
                     bat '''
-                    if docker ps -a --filter "name=myproject1-container" -q; then
+                    for /F "tokens=*" %i in ("docker ps -a --filter "name=myproject1-container" -q") do set containerId=%i
+                    if defined containerId (
                         echo "Container exists, stopping and removing it..."
                         docker stop myproject1-container
                         docker rm myproject1-container
-                    else
+                    ) else (
                         echo "No existing container found."
-                    fi
+                    )
 
                     echo "Running new Docker container..."
                     docker run -d --name myproject1-container --network myproject-network ^
@@ -123,12 +125,13 @@ pipeline {
                 echo "Checking if Docker network exists and overwriting if necessary..."
                 script {
                     bat '''
-                    if docker network ls --filter "name=myproject-network" -q; then
+                    for /F "tokens=*" %i in ("docker network ls --filter "name=myproject-network" -q") do set networkId=%i
+                    if defined networkId (
                         echo "Network exists, removing it..."
                         docker network rm myproject-network
-                    else
+                    ) else (
                         echo "No existing network found."
-                    fi
+                    )
 
                     echo "Creating new Docker network..."
                     docker network create myproject-network
