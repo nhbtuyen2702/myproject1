@@ -68,80 +68,68 @@ pipeline {
             }
         }
 
-         // 5. Xóa image Docker cũ và images bị dangling trước khi xây dựng lại image mới
-        stage('Remove Existing Docker Image') {
+        // 5. Kiểm tra và ghi đè image Docker nếu đã tồn tại
+        stage('Check and Build Docker Image') {
             steps {
-                echo "Removing existing Docker image if it exists and dangling images..."
+                echo "Checking if Docker image exists and overwriting if necessary..."
                 script {
                     bat '''
-                    docker images -q myproject1-app:latest && docker rmi myproject1-app:latest || echo "No existing image to remove"
-                    '''
-                }
-            }
-        }
+                    if docker images -q myproject1-app:latest; then
+                        echo "Image exists, removing it..."
+                        docker rmi myproject1-app:latest
+                    else
+                        echo "No existing image found."
+                    fi
 
-        // 6. Xóa dangling images nếu có
-        stage('Remove Dangling Images') {
-            steps {
-                echo "Removing dangling images..."
-                script {
-                    bat '''
-                    for /F "tokens=*" %i in ('docker images -f "dangling=true" -q') do docker rmi %i || echo "No dangling images to remove"
-                    '''
-                }
-            }
-        }
-
-        // 7. Xây dựng image Docker từ Dockerfile với cờ --rm để xóa các container trung gian
-        stage('Build Docker Image') {
-            steps {
-                echo "Building Docker image..."
-                bat 'docker build --rm -t myproject1-app:latest .'
-                script {
-                    bat '''
+                    echo "Building new Docker image..."
+                    docker build --rm -t myproject1-app:latest .
                     echo "Docker image built successfully."
                     '''
                 }
             }
         }
 
-        // 7. Liệt kê Docker images để kiểm tra
-        stage('List Docker Images') {
+        // 6. Kiểm tra và ghi đè container Docker nếu đã tồn tại
+        stage('Check and Run Docker Container') {
             steps {
-                echo "Listing Docker images to verify build..."
+                echo "Checking if Docker container exists and overwriting if necessary..."
                 script {
                     bat '''
-                    echo "Listing all Docker images..."
-                    docker images
-                    echo "Docker images listed successfully."
+                    if docker ps -a --filter "name=myproject1-container" -q; then
+                        echo "Container exists, stopping and removing it..."
+                        docker stop myproject1-container
+                        docker rm myproject1-container
+                    else
+                        echo "No existing container found."
+                    fi
+
+                    echo "Running new Docker container..."
+                    docker run -d --name myproject1-container --network myproject-network ^
+                        -p 8080:8080 ^
+                        -e SPRING_DATASOURCE_URL=jdbc:mysql://myproject-mysql:3306/myprojectdb ^
+                        -e SPRING_DATASOURCE_USERNAME=root ^
+                        -e SPRING_DATASOURCE_PASSWORD=2702 ^
+                        -v C:\\tmp\\shared_data:/app/shared_data myproject1-app:latest
+                    echo "Spring Boot application container started successfully."
                     '''
                 }
             }
         }
 
-        // 8. Dừng và xóa các container đang tồn tại (nếu có)
-        stage('Remove Existing Containers') {
+        // 7. Kiểm tra và ghi đè network Docker nếu đã tồn tại
+        stage('Check and Create Docker Network') {
             steps {
-                echo "Stopping and removing existing Docker containers..."
+                echo "Checking if Docker network exists and overwriting if necessary..."
                 script {
                     bat '''
-                    docker stop myproject1-container || echo "No container to stop"
-                    docker rm myproject1-container || echo "No container to remove"
-                    docker stop myproject-mysql || echo "No container to stop"
-                    docker rm myproject-mysql || echo "No container to remove"
-                    echo "Existing containers removed successfully."
-                    '''
-                }
-            }
-        }
+                    if docker network ls --filter "name=myproject-network" -q; then
+                        echo "Network exists, removing it..."
+                        docker network rm myproject-network
+                    else
+                        echo "No existing network found."
+                    fi
 
-        // 9. Tạo mạng Docker mới
-        stage('Create Docker Network') {
-            steps {
-                echo "Creating Docker network..."
-                script {
-                    bat '''
-                    docker network rm myproject-network || echo "No existing network to remove"
+                    echo "Creating new Docker network..."
                     docker network create myproject-network
                     echo "Docker network created successfully."
                     '''
@@ -149,7 +137,7 @@ pipeline {
             }
         }
 
-        // 10. Khởi chạy MySQL container
+        // 8. Kiểm tra và chạy MySQL container
         stage('Run MySQL Container') {
             steps {
                 echo "Running MySQL container..."
@@ -158,12 +146,18 @@ pipeline {
                     if not exist C:\\tmp\\shared_data (
                         mkdir C:\\tmp\\shared_data
                     )
-                    docker run -d --name myproject-mysql --network myproject-network ^
-                        -e MYSQL_ROOT_PASSWORD=2702 ^
-                        -e MYSQL_DATABASE=myprojectdb ^
-                        -v C:\\tmp\\shared_data:/shared_data ^
-                        -p 3306:3306 mysql:8.0
-                    echo "MySQL container started successfully."
+
+                    if docker ps -a --filter "name=myproject-mysql" -q; then
+                        echo "MySQL container already exists, not recreating."
+                    else
+                        echo "Running new MySQL container..."
+                        docker run -d --name myproject-mysql --network myproject-network ^
+                            -e MYSQL_ROOT_PASSWORD=2702 ^
+                            -e MYSQL_DATABASE=myprojectdb ^
+                            -v C:\\tmp\\shared_data:/shared_data ^
+                            -p 3306:3306 mysql:8.0
+                    fi
+                    echo "MySQL container is running."
                     '''
                 }
             }
@@ -182,27 +176,7 @@ pipeline {
             }
         }
 
-        // 11. Khởi chạy ứng dụng Spring Boot với Docker
-        stage('Run Spring Boot Container') {
-            steps {
-                echo "Running Spring Boot application with Docker Run..."
-                script {
-                    bat '''
-                    docker stop myproject1-container || echo "No container to stop"
-                    docker rm myproject1-container || echo "No container to remove"
-                    docker run -d --name myproject1-container --network myproject-network ^
-                        -p 8080:8080 ^
-                        -e SPRING_DATASOURCE_URL=jdbc:mysql://myproject-mysql:3306/myprojectdb ^
-                        -e SPRING_DATASOURCE_USERNAME=root ^
-                        -e SPRING_DATASOURCE_PASSWORD=2702 ^
-                        -v C:\\tmp\\shared_data:/app/shared_data myproject1-app:latest
-                    echo "Spring Boot application container started successfully."
-                    '''
-                }
-            }
-        }
-
-        // 12. Kiểm tra trạng thái các container
+        // 9. Kiểm tra trạng thái các container
         stage('Check Running Docker Containers') {
             steps {
                 echo "Listing all running Docker containers..."
@@ -215,7 +189,7 @@ pipeline {
             }
         }
 
-        // 13. Xem thông tin chi tiết của container
+        // 10. Xem thông tin chi tiết của container
         stage('Inspect Docker Containers') {
             steps {
                 echo "Inspecting Docker containers for additional details..."
@@ -229,7 +203,7 @@ pipeline {
             }
         }
 
-        // 14. Kiểm tra dữ liệu chia sẻ giữa máy chủ và các container
+        // 11. Kiểm tra dữ liệu chia sẻ giữa máy chủ và các container
         stage('Check Shared Data Between Containers and Host') {
             steps {
                 echo "Checking shared data between containers and host..."
@@ -247,7 +221,7 @@ pipeline {
             }
         }
 
-        // 15. Xem log chi tiết của ứng dụng Spring Boot
+        // 12. Xem log chi tiết của ứng dụng Spring Boot
         stage('Check Detailed Spring Boot Logs') {
             steps {
                 echo "Checking detailed logs of the Spring Boot application..."
@@ -260,7 +234,7 @@ pipeline {
             }
         }
 
-        // 16. Thực hiện kiểm tra sức khỏe (health check) cho ứng dụng
+        // 13. Thực hiện kiểm tra sức khỏe (health check) cho ứng dụng
         stage('Run Health Check') {
             steps {
                 echo "Running health check on the Spring Boot application..."
