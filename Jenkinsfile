@@ -46,6 +46,20 @@ pipeline {
             }
         }
 
+         stage('Remove Existing Containers') {
+            steps {
+                echo "Stopping and removing existing Docker containers..."
+                script {
+                    bat '''
+                    docker stop myproject1-container || echo "No container to stop"
+                    docker rm myproject1-container || echo "No container to remove"
+                    docker stop myproject-mysql || echo "No container to stop"
+                    docker rm myproject-mysql || echo "No container to remove"
+                    '''
+                }
+            }
+        }
+
         stage('Create Docker Network') {
             steps {
                 echo "Creating Docker network..."
