@@ -227,7 +227,7 @@ pipeline {
                 echo "Checking detailed logs of the Spring Boot application..."
                 script {
                     bat '''
-                    docker logs -f myproject1-container || echo "Failed to retrieve Spring Boot logs"
+                    docker logs myproject1-container || echo "Failed to retrieve Spring Boot logs"
                     echo "Spring Boot logs checked successfully."
                     '''
                 }
