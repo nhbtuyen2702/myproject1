@@ -95,22 +95,6 @@ pipeline {
             }
         }
 
-        // 7. Dừng và xóa các container đang tồn tại (nếu có)
-        stage('Remove Existing Containers') {
-            steps {
-                echo "Stopping and removing existing Docker containers..."
-                script {
-                    bat '''
-                    docker stop myproject1-container || echo "No container to stop"
-                    docker rm myproject1-container || echo "No container to remove"
-                    docker stop myproject-mysql || echo "No container to stop"
-                    docker rm myproject-mysql || echo "No container to remove"
-                    echo "Existing containers removed successfully."
-                    '''
-                }
-            }
-        }
-
         // 8. Tạo mạng Docker mới
         stage('Create Docker Network') {
             steps {
