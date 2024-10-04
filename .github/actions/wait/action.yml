@@ -1,0 +1,19 @@
+name: Wait for Service to be Ready
+description: "Wait for a specific amount of time to allow services to start"
+inputs:
+  seconds:
+    description: "Number of seconds to wait"
+    required: true
+    default: 30
+
+runs:
+  using: "composite"
+  steps:
+    - name: Waiting for services to be ready
+      run: |
+        echo "Waiting for ${{ inputs.seconds }} seconds..."
+        sleep ${{ inputs.seconds }}
+        echo "Wait complete."
+      shell: bash
+
+
