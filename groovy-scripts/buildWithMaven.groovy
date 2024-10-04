@@ -1,9 +1,10 @@
 def call() {
     echo "Building project with Maven..."
-    sh '''
+    bat '''
     mvn clean install
-    echo "Listing all files after Maven build:"
-    ls -al
+    dir
     echo "Maven build completed successfully."
     '''
 }
+
+return this

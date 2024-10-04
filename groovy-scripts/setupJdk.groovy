@@ -1,10 +1,9 @@
-def setupJdk() {
+def call() {
     echo "Setting up JDK 17..."
-    sh '''
+    bat '''
     java -version
-    echo "Current working directory: $(pwd)"
-    echo "Listing all files and directories after setting up JDK:"
-    ls -al
+    echo "Current working directory: %CD%"
+    dir
     echo "JDK 17 setup completed successfully."
     '''
 }

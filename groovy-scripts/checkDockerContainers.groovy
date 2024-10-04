@@ -1,7 +1,9 @@
 def call() {
     echo "Listing all running Docker containers..."
-    sh '''
+    bat '''
     docker ps -a
     echo "Docker containers listed successfully."
     '''
 }
+
+return this
