@@ -14,40 +14,40 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: ./.github/actions/checkout
+        uses: ./.github/actions/checkout/action.yml
 
       - name: Set up JDK 17
-        uses: ./.github/actions/setup-jdk
+        uses: ./.github/actions/setup-jdk/action.yml
 
       - name: Build with Maven
-        uses: ./.github/actions/build-maven
+        uses: ./.github/actions/build-maven/action.yml
 
       - name: Log in to Docker Hub
-        uses: ./.github/actions/docker-login
+        uses: ./.github/actions/docker-login/action.yml
 
       - name: Build Docker Image
-        uses: ./.github/actions/build-docker
+        uses: ./.github/actions/build-docker/action.yml
 
       - name: Create Docker Network
-        uses: ./.github/actions/docker-network
+        uses: ./.github/actions/docker-network/action.yml
 
       - name: Run MySQL Container
-        uses: ./.github/actions/run-mysql
+        uses: ./.github/actions/run-mysql/action.yml
 
       - name: Run Spring Boot Container
-        uses: ./.github/actions/run-springboot
+        uses: ./.github/actions/run-springboot/action.yml
 
       - name: Check Running Docker Containers
-        uses: ./.github/actions/check-docker-containers
+        uses: ./.github/actions/check-docker-containers/action.yml
 
       - name: Inspect Docker Containers
-        uses: ./.github/actions/inspect-docker-containers
+        uses: ./.github/actions/inspect-docker-containers/action.yml
 
       - name: Check Shared Data Between Containers and Host
-        uses: ./.github/actions/check-shared-data
+        uses: ./.github/actions/check-shared-data/action.yml
 
       - name: Check Spring Boot Logs
-        uses: ./.github/actions/check-springboot-logs
+        uses: ./.github/actions/check-springboot-logs/action.yml
 
       - name: Run Health Check
-        uses: ./.github/actions/health-check
+        uses: ./.github/actions/health-check/action.yml
