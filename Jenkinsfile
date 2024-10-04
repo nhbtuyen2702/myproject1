@@ -3,97 +3,142 @@ pipeline {
 
     environment {
         JAVA_HOME = 'C:\\Program Files\\Java\\jdk-17'
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')  // Sử dụng đúng ID của DockerHub đã tạo
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                load 'groovy-scripts/checkout.groovy'()
+                script {
+                    def checkoutScript = load 'groovy-scripts/checkout.groovy'
+                    checkoutScript()  // Gọi trực tiếp mà không cần .call()
+                }
             }
         }
 
         stage('Set up JDK') {
             steps {
-                load 'groovy-scripts/setupJdk.groovy'()
+                script {
+                    def setupJdkScript = load 'groovy-scripts/setupJdk.groovy'
+                    setupJdkScript()  // Gọi trực tiếp mà không cần .call()
+                }
             }
         }
 
         stage('Build with Maven') {
             steps {
-                load 'groovy-scripts/buildWithMaven.groovy'()
+                script {
+                    def buildWithMavenScript = load 'groovy-scripts/buildWithMaven.groovy'
+                    buildWithMavenScript()  // Gọi trực tiếp mà không cần .call()
+                }
             }
         }
 
         stage('Login to Docker Hub') {
             steps {
-                load 'groovy-scripts/loginToDockerHub.groovy'()
+                script {
+                    def loginToDockerHubScript = load 'groovy-scripts/loginToDockerHub.groovy'
+                    loginToDockerHubScript()  // Gọi trực tiếp mà không cần .call()
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                load 'groovy-scripts/buildDockerImage.groovy'()
+                script {
+                    def buildDockerImageScript = load 'groovy-scripts/buildDockerImage.groovy'
+                    buildDockerImageScript()  // Gọi trực tiếp mà không cần .call()
+                }
             }
         }
 
         stage('List Docker Images') {
             steps {
-                load 'groovy-scripts/listDockerImages.groovy'()
+                script {
+                    def listDockerImagesScript = load 'groovy-scripts/listDockerImages.groovy'
+                    listDockerImagesScript()  // Gọi trực tiếp mà không cần .call()
+                }
             }
         }
 
         stage('Create Docker Network') {
             steps {
-                load 'groovy-scripts/createDockerNetwork.groovy'()
+                script {
+                    def createDockerNetworkScript = load 'groovy-scripts/createDockerNetwork.groovy'
+                    createDockerNetworkScript()  // Gọi trực tiếp mà không cần .call()
+                }
             }
         }
 
         stage('Run MySQL Container') {
             steps {
-                load 'groovy-scripts/runMysqlContainer.groovy'()
+                script {
+                    def runMysqlContainerScript = load 'groovy-scripts/runMysqlContainer.groovy'
+                    runMysqlContainerScript()  // Gọi trực tiếp mà không cần .call()
+                }
             }
         }
 
         stage('Wait for MySQL to be ready') {
             steps {
-                load 'groovy-scripts/waitForMysql.groovy'()
+                script {
+                    def waitForMysqlScript = load 'groovy-scripts/waitForMysql.groovy'
+                    waitForMysqlScript()  // Gọi trực tiếp mà không cần .call()
+                }
             }
         }
 
         stage('Run Spring Boot Container') {
             steps {
-                load 'groovy-scripts/runSpringBootContainer.groovy'()
+                script {
+                    def runSpringBootContainerScript = load 'groovy-scripts/runSpringBootContainer.groovy'
+                    runSpringBootContainerScript()  // Gọi trực tiếp mà không cần .call()
+                }
             }
         }
 
         stage('Check Running Docker Containers') {
             steps {
-                load 'groovy-scripts/checkDockerContainers.groovy'()
+                script {
+                    def checkDockerContainersScript = load 'groovy-scripts/checkDockerContainers.groovy'
+                    checkDockerContainersScript()  // Gọi trực tiếp mà không cần .call()
+                }
             }
         }
 
         stage('Inspect Docker Containers') {
             steps {
-                load 'groovy-scripts/inspectDockerContainers.groovy'()
+                script {
+                    def inspectDockerContainersScript = load 'groovy-scripts/inspectDockerContainers.groovy'
+                    inspectDockerContainersScript()  // Gọi trực tiếp mà không cần .call()
+                }
             }
         }
 
         stage('Check Shared Data Between Containers and Host') {
             steps {
-                load 'groovy-scripts/checkSharedData.groovy'()
+                script {
+                    def checkSharedDataScript = load 'groovy-scripts/checkSharedData.groovy'
+                    checkSharedDataScript()  // Gọi trực tiếp mà không cần .call()
+                }
             }
         }
 
         stage('Check Detailed Spring Boot Logs') {
             steps {
-                load 'groovy-scripts/checkSpringBootLogs.groovy'()
+                script {
+                    def checkSpringBootLogsScript = load 'groovy-scripts/checkSpringBootLogs.groovy'
+                    checkSpringBootLogsScript()  // Gọi trực tiếp mà không cần .call()
+                }
             }
         }
 
         stage('Run Health Check') {
             steps {
-                load 'groovy-scripts/runHealthCheck.groovy'()
+                script {
+                    def runHealthCheckScript = load 'groovy-scripts/runHealthCheck.groovy'
+                    runHealthCheckScript()  // Gọi trực tiếp mà không cần .call()
+                }
             }
         }
     }
