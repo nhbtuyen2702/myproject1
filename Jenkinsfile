@@ -9,135 +9,135 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                echo "Checking out code from repository..."
                 script {
-                    bat 'scripts\\checkout.bat'
+                    def checkoutScript = load 'groovy-scripts/checkout.groovy'
+                    checkoutScript.checkout()
                 }
             }
         }
 
         stage('Set up JDK') {
             steps {
-                echo "Setting up JDK 17..."
                 script {
-                    bat 'scripts\\setup_jdk.bat'
+                    def setupJdkScript = load 'groovy-scripts/setupJdk.groovy'
+                    setupJdkScript.setupJdk()
                 }
             }
         }
 
         stage('Build with Maven') {
             steps {
-                echo "Building project with Maven..."
                 script {
-                    bat 'scripts\\build_maven.bat'
+                    def buildWithMavenScript = load 'groovy-scripts/buildWithMaven.groovy'
+                    buildWithMavenScript.buildWithMaven()
                 }
             }
         }
 
         stage('Login to Docker Hub') {
             steps {
-                echo "Logging into Docker Hub..."
                 script {
-                    bat 'scripts\\login_dockerhub.bat'
+                    def loginToDockerHubScript = load 'groovy-scripts/loginToDockerHub.groovy'
+                    loginToDockerHubScript.loginToDockerHub()
                 }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo "Building Docker image..."
                 script {
-                    bat 'scripts\\build_docker_image.bat'
+                    def buildDockerImageScript = load 'groovy-scripts/buildDockerImage.groovy'
+                    buildDockerImageScript.buildDockerImage()
                 }
             }
         }
 
         stage('List Docker Images') {
             steps {
-                echo "Listing Docker images to verify build..."
                 script {
-                    bat 'scripts\\list_docker_images.bat'
+                    def listDockerImagesScript = load 'groovy-scripts/listDockerImages.groovy'
+                    listDockerImagesScript.listDockerImages()
                 }
             }
         }
 
         stage('Create Docker Network') {
             steps {
-                echo "Creating Docker network..."
                 script {
-                    bat 'scripts\\create_docker_network.bat'
+                    def createDockerNetworkScript = load 'groovy-scripts/createDockerNetwork.groovy'
+                    createDockerNetworkScript.createDockerNetwork()
                 }
             }
         }
 
         stage('Run MySQL Container') {
             steps {
-                echo "Running MySQL container..."
                 script {
-                    bat 'scripts\\run_mysql_container.bat'
+                    def runMysqlContainerScript = load 'groovy-scripts/runMysqlContainer.groovy'
+                    runMysqlContainerScript.runMysqlContainer()
                 }
             }
         }
 
         stage('Wait for MySQL to be ready') {
             steps {
-                echo "Waiting for MySQL to be ready..."
                 script {
-                    bat 'scripts\\wait_for_mysql.bat'
+                    def waitForMysqlScript = load 'groovy-scripts/waitForMysql.groovy'
+                    waitForMysqlScript.waitForMysql()
                 }
             }
         }
 
         stage('Run Spring Boot Container') {
             steps {
-                echo "Running Spring Boot application with Docker Run..."
                 script {
-                    bat 'scripts\\run_spring_boot_container.bat'
+                    def runSpringBootContainerScript = load 'groovy-scripts/runSpringBootContainer.groovy'
+                    runSpringBootContainerScript.runSpringBootContainer()
                 }
             }
         }
 
         stage('Check Running Docker Containers') {
             steps {
-                echo "Listing all running Docker containers..."
                 script {
-                    bat 'scripts\\check_docker_containers.bat'
+                    def checkDockerContainersScript = load 'groovy-scripts/checkDockerContainers.groovy'
+                    checkDockerContainersScript.checkDockerContainers()
                 }
             }
         }
 
         stage('Inspect Docker Containers') {
             steps {
-                echo "Inspecting Docker containers for additional details..."
                 script {
-                    bat 'scripts\\inspect_docker_containers.bat'
+                    def inspectDockerContainersScript = load 'groovy-scripts/inspectDockerContainers.groovy'
+                    inspectDockerContainersScript.inspectDockerContainers()
                 }
             }
         }
 
         stage('Check Shared Data Between Containers and Host') {
             steps {
-                echo "Checking shared data between containers and host..."
                 script {
-                    bat 'scripts\\check_shared_data.bat'
+                    def checkSharedDataScript = load 'groovy-scripts/checkSharedData.groovy'
+                    checkSharedDataScript.checkSharedData()
                 }
             }
         }
 
         stage('Check Detailed Spring Boot Logs') {
             steps {
-                echo "Checking detailed logs of the Spring Boot application..."
                 script {
-                    bat 'scripts\\check_spring_boot_logs.bat'
+                    def checkSpringBootLogsScript = load 'groovy-scripts/checkSpringBootLogs.groovy'
+                    checkSpringBootLogsScript.checkSpringBootLogs()
                 }
             }
         }
 
         stage('Run Health Check') {
             steps {
-                echo "Running health check on the Spring Boot application..."
                 script {
-                    bat 'scripts\\run_health_check.bat'
+                    def runHealthCheckScript = load 'groovy-scripts/runHealthCheck.groovy'
+                    runHealthCheckScript.runHealthCheck()
                 }
             }
         }
