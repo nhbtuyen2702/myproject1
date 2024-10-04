@@ -8,3 +8,4 @@ runs:
         ls -al /tmp/shared_data
         docker exec myproject-mysql ls -al /shared_data
         docker exec myproject1-container ls -al /app/shared_data
+      shell: bash

@@ -1,15 +1,15 @@
-name: Set up JDK
+name: Set up JDK 17
 description: "Set up JDK 17"
-
 runs:
   using: "composite"
   steps:
     - name: Set up JDK 17
-      java-version: '17'
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    - name: List files after setting up JDK
       run: |
-        java -version
         echo "Current working directory: $(pwd)"
-        echo "Listing all files and directories after setting up JDK:"
         ls -al
-        echo "JDK 17 setup completed successfully."
-      shell: bash  # Thêm thuộc tính shell ở đây
+      shell: bash

@@ -10,3 +10,4 @@ runs:
           -e SPRING_DATASOURCE_URL=jdbc:mysql://myproject-mysql:3306/myprojectdb \
           -e SPRING_DATASOURCE_USERNAME=root \
           -e SPRING_DATASOURCE_PASSWORD=2702 myproject1-app:latest
+      shell: bash

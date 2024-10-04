@@ -6,3 +6,4 @@ runs:
     - name: Check Running Docker Containers
       run: |
         docker ps -a
+      shell: bash

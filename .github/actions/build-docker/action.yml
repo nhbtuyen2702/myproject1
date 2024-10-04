@@ -6,3 +6,4 @@ runs:
     - name: Build Docker Image
       run: |
         docker build -t myproject1-app:latest .
+      shell: bash

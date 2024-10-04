@@ -6,3 +6,4 @@ runs:
     - name: Check Spring Boot Logs
       run: |
         docker logs myproject1-container || echo "Failed to retrieve Spring Boot logs"
+      shell: bash

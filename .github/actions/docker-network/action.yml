@@ -6,3 +6,4 @@ runs:
     - name: Create Docker Network
       run: |
         docker network create myproject-network
+      shell: bash

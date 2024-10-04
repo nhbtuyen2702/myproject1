@@ -9,3 +9,4 @@ runs:
       run: |
         echo "Current working directory: $(pwd)"
         ls -al
+      shell: bash
