@@ -1,4 +1,4 @@
-name: Build, Test, and Deploy Spring Boot Application with Docker
+name: Build, Test, and Deploy Spring Boot Application with Docker 1
 
 on:
   push:
@@ -13,41 +13,54 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Use the official GitHub action to check out the code from the repository
       - name: Checkout Code
-        uses: ./.github/actions/checkout
+        uses: actions/checkout@v4
 
+      # 2. Use the local action for setting up JDK 17
       - name: Set up JDK 17
         uses: ./.github/actions/setup-jdk
 
+      # 3. Use the local action for building with Maven
       - name: Build with Maven
         uses: ./.github/actions/build-maven
 
+      # 4. Use the local action for Docker Hub login
       - name: Log in to Docker Hub
         uses: ./.github/actions/docker-login
 
+      # 5. Use the local action for building the Docker image
       - name: Build Docker Image
         uses: ./.github/actions/build-docker
 
+      # 6. Use the local action to create Docker network
       - name: Create Docker Network
         uses: ./.github/actions/docker-network
 
+      # 7. Use the local action to run MySQL container
       - name: Run MySQL Container
         uses: ./.github/actions/run-mysql
 
+      # 8. Use the local action to run Spring Boot container
       - name: Run Spring Boot Container
         uses: ./.github/actions/run-springboot
 
+      # 9. Use the local action to check running Docker containers
       - name: Check Running Docker Containers
         uses: ./.github/actions/check-docker-containers
 
+      # 10. Use the local action to inspect Docker containers
       - name: Inspect Docker Containers
         uses: ./.github/actions/inspect-docker-containers
 
+      # 11. Use the local action to check shared data between containers and host
       - name: Check Shared Data Between Containers and Host
         uses: ./.github/actions/check-shared-data
 
+      # 12. Use the local action to check Spring Boot logs
       - name: Check Spring Boot Logs
         uses: ./.github/actions/check-springboot-logs
 
+      # 13. Use the local action to run health check
       - name: Run Health Check
         uses: ./.github/actions/health-check
