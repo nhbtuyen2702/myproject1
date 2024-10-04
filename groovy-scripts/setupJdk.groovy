@@ -1,4 +1,4 @@
-def call() {
+def setupJdk() {
     echo "Setting up JDK 17..."
     sh '''
     java -version
@@ -8,3 +8,5 @@ def call() {
     echo "JDK 17 setup completed successfully."
     '''
 }
+
+return this
