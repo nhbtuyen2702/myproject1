@@ -23,7 +23,7 @@ jobs:
 
       # 3. Use the local action for building with Maven
       - name: Build with Maven
-        uses: ./.github/actions/build-maven
+        uses: ./.github/actions/build-with-maven
 
       # 4. Use the local action for Docker Hub login
       - name: Log in to Docker Hub
