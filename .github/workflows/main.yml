@@ -1,0 +1,38 @@
+name: Build, Test, and Deploy Spring Boot Application with Docker
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: ./.github/actions/checkout.yml
+
+      - name: Set up JDK 17
+        uses: ./.github/actions/setup-jdk.yml
+
+      - name: Build with Maven
+        uses: ./.github/actions/build-with-maven.yml
+
+      - name: Log in to Docker Hub
+        uses: ./.github/actions/docker-login.yml
+
+      - name: Build Docker Image
+        uses: ./.github/actions/build-docker.yml
+
+      - name: Create Docker Network
+        uses: ./.github/actions/docker-network.yml
+
+      - name: Run MySQL Container
+        uses: ./.github/actions/run-mysql.yml
+
+      - name: Run Spring Boot Container
+        uses: ./.github/actions/run-springboot.yml

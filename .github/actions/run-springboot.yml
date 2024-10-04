@@ -1,0 +1,16 @@
+name: Run Spring Boot Container
+
+description: "Run Spring Boot container in Docker network"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Spring Boot Container
+      run: |
+        docker run -d --name myproject1-container --network myproject-network \
+          -p 8080:8080 \
+          -e SPRING_DATASOURCE_URL=jdbc:mysql://myproject-mysql:3306/myprojectdb \
+          -e SPRING_DATASOURCE_USERNAME=root \
+          -e SPRING_DATASOURCE_PASSWORD=2702 \
+          -v /tmp/shared_data:/app/shared_data myproject1-app:latest
+        echo "Spring Boot application started successfully."

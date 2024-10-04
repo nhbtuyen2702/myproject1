@@ -1,0 +1,13 @@
+name: Build with Maven
+
+description: "Build the project using Maven"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Build with Maven
+      run: |
+        echo "Building the project using Maven..."
+        mvn clean install
+        echo "Maven build completed."
+        ls -al

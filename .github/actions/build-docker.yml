@@ -1,0 +1,11 @@
+name: Build Docker Image
+
+description: "Build Docker Image"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Build Docker Image
+      run: |
+        docker build -t myproject1-app:latest .
+        echo "Docker image build completed."

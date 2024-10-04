@@ -1,0 +1,16 @@
+name: Setup JDK 17
+
+description: "Set up JDK version 17 for the environment"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    - name: List files after setting up JDK
+      run: |
+        echo "Current working directory: $(pwd)"
+        ls -al

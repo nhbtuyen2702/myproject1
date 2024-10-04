@@ -1,0 +1,13 @@
+name: Checkout Code
+
+description: "Check out code from repository"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+    - name: List files after checkout
+      run: |
+        echo "Current working directory: $(pwd)"
+        ls -al

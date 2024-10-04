@@ -1,0 +1,11 @@
+name: Create Docker Network
+
+description: "Create a Docker network"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Create Docker Network
+      run: |
+        docker network create myproject-network
+        echo "Docker network created."
