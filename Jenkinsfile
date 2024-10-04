@@ -11,7 +11,7 @@ pipeline {
             steps {
                 echo "Checking out code from repository..."
                 script {
-                    bat 'checkout.bat'
+                    bat 'scripts\\checkout.bat'
                 }
             }
         }
@@ -20,7 +20,7 @@ pipeline {
             steps {
                 echo "Setting up JDK 17..."
                 script {
-                    bat 'setup_jdk.bat'
+                    bat 'scripts\\setup_jdk.bat'
                 }
             }
         }
@@ -29,7 +29,7 @@ pipeline {
             steps {
                 echo "Building project with Maven..."
                 script {
-                    bat 'build_maven.bat'
+                    bat 'scripts\\build_maven.bat'
                 }
             }
         }
@@ -38,7 +38,7 @@ pipeline {
             steps {
                 echo "Logging into Docker Hub..."
                 script {
-                    bat 'login_dockerhub.bat'
+                    bat 'scripts\\login_dockerhub.bat'
                 }
             }
         }
@@ -47,7 +47,7 @@ pipeline {
             steps {
                 echo "Building Docker image..."
                 script {
-                    bat 'build_docker_image.bat'
+                    bat 'scripts\\build_docker_image.bat'
                 }
             }
         }
@@ -56,7 +56,7 @@ pipeline {
             steps {
                 echo "Listing Docker images to verify build..."
                 script {
-                    bat 'list_docker_images.bat'
+                    bat 'scripts\\list_docker_images.bat'
                 }
             }
         }
@@ -65,7 +65,7 @@ pipeline {
             steps {
                 echo "Creating Docker network..."
                 script {
-                    bat 'create_docker_network.bat'
+                    bat 'scripts\\create_docker_network.bat'
                 }
             }
         }
@@ -74,7 +74,7 @@ pipeline {
             steps {
                 echo "Running MySQL container..."
                 script {
-                    bat 'run_mysql_container.bat'
+                    bat 'scripts\\run_mysql_container.bat'
                 }
             }
         }
@@ -83,7 +83,7 @@ pipeline {
             steps {
                 echo "Waiting for MySQL to be ready..."
                 script {
-                    bat 'wait_for_mysql.bat'
+                    bat 'scripts\\wait_for_mysql.bat'
                 }
             }
         }
@@ -92,7 +92,7 @@ pipeline {
             steps {
                 echo "Running Spring Boot application with Docker Run..."
                 script {
-                    bat 'run_spring_boot_container.bat'
+                    bat 'scripts\\run_spring_boot_container.bat'
                 }
             }
         }
@@ -101,7 +101,7 @@ pipeline {
             steps {
                 echo "Listing all running Docker containers..."
                 script {
-                    bat 'check_docker_containers.bat'
+                    bat 'scripts\\check_docker_containers.bat'
                 }
             }
         }
@@ -110,7 +110,7 @@ pipeline {
             steps {
                 echo "Inspecting Docker containers for additional details..."
                 script {
-                    bat 'inspect_docker_containers.bat'
+                    bat 'scripts\\inspect_docker_containers.bat'
                 }
             }
         }
@@ -119,7 +119,7 @@ pipeline {
             steps {
                 echo "Checking shared data between containers and host..."
                 script {
-                    bat 'check_shared_data.bat'
+                    bat 'scripts\\check_shared_data.bat'
                 }
             }
         }
@@ -128,7 +128,7 @@ pipeline {
             steps {
                 echo "Checking detailed logs of the Spring Boot application..."
                 script {
-                    bat 'check_spring_boot_logs.bat'
+                    bat 'scripts\\check_spring_boot_logs.bat'
                 }
             }
         }
@@ -137,7 +137,7 @@ pipeline {
             steps {
                 echo "Running health check on the Spring Boot application..."
                 script {
-                    bat 'run_health_check.bat'
+                    bat 'scripts\\run_health_check.bat'
                 }
             }
         }
