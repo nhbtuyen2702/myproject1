@@ -1,0 +1,53 @@
+name: Build, Test, and Deploy Spring Boot Application with Docker
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: ./.github/actions/checkout
+
+      - name: Set up JDK 17
+        uses: ./.github/actions/setup-jdk
+
+      - name: Build with Maven
+        uses: ./.github/actions/build-maven
+
+      - name: Log in to Docker Hub
+        uses: ./.github/actions/docker-login
+
+      - name: Build Docker Image
+        uses: ./.github/actions/build-docker
+
+      - name: Create Docker Network
+        uses: ./.github/actions/docker-network
+
+      - name: Run MySQL Container
+        uses: ./.github/actions/run-mysql
+
+      - name: Run Spring Boot Container
+        uses: ./.github/actions/run-springboot
+
+      - name: Check Running Docker Containers
+        uses: ./.github/actions/check-docker-containers
+
+      - name: Inspect Docker Containers
+        uses: ./.github/actions/inspect-docker-containers
+
+      - name: Check Shared Data Between Containers and Host
+        uses: ./.github/actions/check-shared-data
+
+      - name: Check Spring Boot Logs
+        uses: ./.github/actions/check-springboot-logs
+
+      - name: Run Health Check
+        uses: ./.github/actions/health-check

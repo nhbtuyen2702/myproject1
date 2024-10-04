@@ -1,0 +1,8 @@
+name: Check Spring Boot Logs
+description: "Check logs of the Spring Boot application"
+runs:
+  using: "composite"
+  steps:
+    - name: Check Spring Boot Logs
+      run: |
+        docker logs myproject1-container || echo "Failed to retrieve Spring Boot logs"

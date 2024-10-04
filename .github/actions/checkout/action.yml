@@ -1,7 +1,5 @@
 name: Checkout Code
-
 description: "Check out code from repository"
-
 runs:
   using: "composite"
   steps:

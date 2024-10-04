@@ -1,7 +1,5 @@
-name: Setup JDK 17
-
-description: "Set up JDK version 17 for the environment"
-
+name: Set up JDK 17
+description: "Set up JDK 17"
 runs:
   using: "composite"
   steps:

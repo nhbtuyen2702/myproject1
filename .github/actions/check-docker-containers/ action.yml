@@ -1,0 +1,8 @@
+name: Check Docker Containers
+description: "Check running Docker containers"
+runs:
+  using: "composite"
+  steps:
+    - name: Check Running Docker Containers
+      run: |
+        docker ps -a

@@ -1,0 +1,10 @@
+name: Check Shared Data Between Containers and Host
+description: "Check shared data between containers and host"
+runs:
+  using: "composite"
+  steps:
+    - name: Check Shared Data
+      run: |
+        ls -al /tmp/shared_data
+        docker exec myproject-mysql ls -al /shared_data
+        docker exec myproject1-container ls -al /app/shared_data

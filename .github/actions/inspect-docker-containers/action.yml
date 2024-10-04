@@ -1,0 +1,9 @@
+name: Inspect Docker Containers
+description: "Inspect Docker containers for details"
+runs:
+  using: "composite"
+  steps:
+    - name: Inspect Docker Containers
+      run: |
+        docker inspect myproject1-container || echo "Failed to inspect Spring Boot container"
+        docker inspect myproject-mysql || echo "Failed to inspect MySQL container"
