@@ -4,5 +4,6 @@ def checkout() {
     echo "Current working directory: ${pwd()}"
     sh 'ls -al'
     echo "Code checked out successfully."
-    return this
 }
+
+return this
