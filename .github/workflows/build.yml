@@ -37,11 +37,10 @@ jobs:
       - name: Run MySQL Container
         uses: ./.github/actions/run-mysql
 
-      # Gọi action wait sau khi MySQL container chạy
       - name: Wait for MySQL to be ready
         uses: ./.github/actions/wait
         with:
-          seconds: 30  # Điều chỉnh số giây chờ theo nhu cầu
+          seconds: 30
 
       - name: Run Spring Boot Container
         uses: ./.github/actions/run-springboot

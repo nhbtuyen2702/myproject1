@@ -11,7 +11,7 @@ pipeline {
             steps {
                 script {
                     def checkoutScript = load 'groovy-scripts/checkout.groovy'
-                    checkoutScript()  // Gọi trực tiếp mà không cần .call()
+                    checkoutScript()
                 }
             }
         }
@@ -20,7 +20,7 @@ pipeline {
             steps {
                 script {
                     def setupJdkScript = load 'groovy-scripts/setupJdk.groovy'
-                    setupJdkScript()  // Gọi trực tiếp mà không cần .call()
+                    setupJdkScript()
                 }
             }
         }
@@ -29,7 +29,7 @@ pipeline {
             steps {
                 script {
                     def buildWithMavenScript = load 'groovy-scripts/buildWithMaven.groovy'
-                    buildWithMavenScript()  // Gọi trực tiếp mà không cần .call()
+                    buildWithMavenScript()
                 }
             }
         }
@@ -38,7 +38,7 @@ pipeline {
             steps {
                 script {
                     def loginToDockerHubScript = load 'groovy-scripts/loginToDockerHub.groovy'
-                    loginToDockerHubScript()  // Gọi trực tiếp mà không cần .call()
+                    loginToDockerHubScript()
                 }
             }
         }
@@ -47,7 +47,7 @@ pipeline {
             steps {
                 script {
                     def buildDockerImageScript = load 'groovy-scripts/buildDockerImage.groovy'
-                    buildDockerImageScript()  // Gọi trực tiếp mà không cần .call()
+                    buildDockerImageScript()
                 }
             }
         }
@@ -56,7 +56,7 @@ pipeline {
             steps {
                 script {
                     def listDockerImagesScript = load 'groovy-scripts/listDockerImages.groovy'
-                    listDockerImagesScript()  // Gọi trực tiếp mà không cần .call()
+                    listDockerImagesScript()
                 }
             }
         }
@@ -65,7 +65,7 @@ pipeline {
             steps {
                 script {
                     def createDockerNetworkScript = load 'groovy-scripts/createDockerNetwork.groovy'
-                    createDockerNetworkScript()  // Gọi trực tiếp mà không cần .call()
+                    createDockerNetworkScript()
                 }
             }
         }
@@ -74,7 +74,7 @@ pipeline {
             steps {
                 script {
                     def runMysqlContainerScript = load 'groovy-scripts/runMysqlContainer.groovy'
-                    runMysqlContainerScript()  // Gọi trực tiếp mà không cần .call()
+                    runMysqlContainerScript()
                 }
             }
         }
@@ -83,7 +83,7 @@ pipeline {
             steps {
                 script {
                     def waitForMysqlScript = load 'groovy-scripts/waitForMysql.groovy'
-                    waitForMysqlScript()  // Gọi trực tiếp mà không cần .call()
+                    waitForMysqlScript()
                 }
             }
         }
@@ -92,7 +92,7 @@ pipeline {
             steps {
                 script {
                     def runSpringBootContainerScript = load 'groovy-scripts/runSpringBootContainer.groovy'
-                    runSpringBootContainerScript()  // Gọi trực tiếp mà không cần .call()
+                    runSpringBootContainerScript()
                 }
             }
         }
@@ -101,7 +101,7 @@ pipeline {
             steps {
                 script {
                     def checkDockerContainersScript = load 'groovy-scripts/checkDockerContainers.groovy'
-                    checkDockerContainersScript()  // Gọi trực tiếp mà không cần .call()
+                    checkDockerContainersScript()
                 }
             }
         }
@@ -110,7 +110,7 @@ pipeline {
             steps {
                 script {
                     def inspectDockerContainersScript = load 'groovy-scripts/inspectDockerContainers.groovy'
-                    inspectDockerContainersScript()  // Gọi trực tiếp mà không cần .call()
+                    inspectDockerContainersScript()
                 }
             }
         }
@@ -119,7 +119,7 @@ pipeline {
             steps {
                 script {
                     def checkSharedDataScript = load 'groovy-scripts/checkSharedData.groovy'
-                    checkSharedDataScript()  // Gọi trực tiếp mà không cần .call()
+                    checkSharedDataScript()
                 }
             }
         }
@@ -128,7 +128,7 @@ pipeline {
             steps {
                 script {
                     def checkSpringBootLogsScript = load 'groovy-scripts/checkSpringBootLogs.groovy'
-                    checkSpringBootLogsScript()  // Gọi trực tiếp mà không cần .call()
+                    checkSpringBootLogsScript()
                 }
             }
         }
@@ -137,7 +137,7 @@ pipeline {
             steps {
                 script {
                     def runHealthCheckScript = load 'groovy-scripts/runHealthCheck.groovy'
-                    runHealthCheckScript()  // Gọi trực tiếp mà không cần .call()
+                    runHealthCheckScript()
                 }
             }
         }
