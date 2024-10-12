@@ -32,23 +32,15 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Log in to AWS ECR
-        run: |
-          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 600627348552.dkr.ecr.us-east-1.amazonaws.com
-
       - name: Build Docker image
         run: docker build -t myproject1-app:latest .
 
       - name: Tag Docker image
         run: docker tag myproject1-app:latest 600627348552.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest
 
+      - name: Log in to AWS ECR
+        run: |
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 600627348552.dkr.ecr.us-east-1.amazonaws.com
+
       - name: Push Docker image to AWS ECR
         run: docker push 600627348552.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest
-
-      - name: Update ECS service with new image
-        run: |
-          aws ecs update-service \
-            --cluster myproject1-app-cluster \
-            --service myproject1-app-service \
-            --force-new-deployment \
-            --region us-east-1
