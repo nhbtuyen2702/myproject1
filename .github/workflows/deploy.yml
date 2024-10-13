@@ -44,3 +44,29 @@ jobs:
 
       - name: Push Docker image to AWS ECR
         run: docker push 600627348552.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest
+
+      # SSH vào EC2 và triển khai Docker container
+      - name: Deploy Docker container on EC2
+        uses: appleboy/ssh-action@v0.1.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            # Cập nhật hệ thống và cài đặt Docker nếu chưa có
+            sudo yum update -y
+            sudo amazon-linux-extras install docker
+            sudo service docker start
+            sudo usermod -a -G docker ec2-user
+            
+            # Đăng xuất và đăng nhập vào ECR
+            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 600627348552.dkr.ecr.us-east-1.amazonaws.com
+            
+            # Kéo Docker image từ ECR
+            docker pull 600627348552.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest
+            
+            # Dừng container cũ (nếu có) và chạy container mới
+            docker stop myproject1-container || true
+            docker rm myproject1-container || true
+            docker run -d -p 8080:8080 --name myproject1-container 600627348552.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest
