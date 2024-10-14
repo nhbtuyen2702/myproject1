@@ -1,4 +1,4 @@
-name: Build, Test, and Deploy Spring Boot Application with Docker
+name: Build, Test, and Deploy Spring Boot Application with Docker on EC2
 
 on:
   push:
@@ -56,20 +56,77 @@ jobs:
           script: |
             # Cập nhật hệ thống và cài đặt Docker nếu chưa có
             sudo yum update -y
-            sudo amazon-linux-extras install docker
+            sudo amazon-linux-extras install docker -y
             sudo service docker start
             sudo usermod -a -G docker ec2-user
 
             # Kích hoạt nhóm docker ngay lập tức trong session này
             newgrp docker
 
-            # Đăng xuất và đăng nhập vào ECR
+            # Cài đặt Docker Compose (nếu chưa có)
+            sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+
+            # Đăng nhập vào ECR
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 600627348552.dkr.ecr.us-east-1.amazonaws.com
 
-            # Kéo Docker image từ ECR
-            docker pull 600627348552.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest
-            
-            # Dừng container cũ (nếu có) và chạy container mới
-            docker stop myproject1-container || true
-            docker rm myproject1-container || true
-            docker run -d -p 8080:8080 --name myproject1-container 600627348552.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest
+            # Tạo file docker-compose.yml trên EC2 để khởi động MySQL và ứng dụng Spring Boot
+            cat <<EOF > docker-compose.yml
+            version: '3.8'
+
+            services:
+              db:
+                image: mysql:8.0
+                container_name: myproject-mysql
+                environment:
+                  MYSQL_ROOT_PASSWORD: MySecurePass2702
+                  MYSQL_DATABASE: myprojectdb
+                ports:
+                  - "3306:3306"
+                networks:
+                  - myproject-network
+                volumes:
+                  - my_db_data:/var/lib/mysql
+                healthcheck:
+                  test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+                  interval: 10s
+                  retries: 5
+
+              app:
+                image: 600627348552.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest
+                container_name: myproject1-container
+                environment:
+                  SPRING_DATASOURCE_URL: jdbc:mysql://myproject-mysql:3306/myprojectdb
+                  SPRING_DATASOURCE_USERNAME: root
+                  SPRING_DATASOURCE_PASSWORD: MySecurePass2702
+                ports:
+                  - "8080:8080"
+                depends_on:
+                  db:
+                    condition: service_healthy
+                networks:
+                  - myproject-network
+
+            networks:
+              myproject-network:
+                driver: bridge
+
+            volumes:
+              my_db_data:
+            EOF
+
+            # Chạy Docker Compose để khởi động MySQL và ứng dụng Spring Boot
+            sudo docker-compose up -d
+
+            # Đợi MySQL và ứng dụng Spring Boot khởi động
+            echo "Waiting for MySQL and Spring Boot to be ready..."
+            sleep 60
+
+            # Kiểm tra container đang chạy
+            docker ps -a
+
+            # Kiểm tra logs của Spring Boot container
+            docker logs myproject1-container || echo "Failed to retrieve Spring Boot logs"
+
+            # Chạy health check trên ứng dụng Spring Boot bằng IP công cộng của EC2
+            curl -v http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4):8080/actuator/health || echo "Health check failed"
