@@ -66,9 +66,7 @@ jobs:
             # Cài đặt Docker Compose (nếu chưa có)
             sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
             sudo chmod +x /usr/local/bin/docker-compose
-
-            # Kiểm tra xem Docker Compose đã được cài đặt thành công chưa
-            docker-compose --version || echo "Docker Compose installation failed"
+            sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose  # Tạo symlink để đảm bảo lệnh có thể chạy
 
             # Đăng nhập vào ECR
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 600627348552.dkr.ecr.us-east-1.amazonaws.com
@@ -99,7 +97,7 @@ jobs:
                 image: 600627348552.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest
                 container_name: myproject1-container
                 environment:
-                  SPRING_DATASOURCE_URL: jdbc:mysql://myproject-mysql:3306/myprojectdb
+                  SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/myprojectdb
                   SPRING_DATASOURCE_USERNAME: root
                   SPRING_DATASOURCE_PASSWORD: MySecurePass2702
                 ports:
