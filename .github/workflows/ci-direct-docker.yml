@@ -1,217 +1,132 @@
-# Tên của workflow này để dễ nhận diện
-name: Build, Test, and Deploy Spring Boot Application with Docker
+name: Build, Test, and Deploy Spring Boot Application with Docker on EC2
 
-# Kích hoạt workflow khi có sự kiện push hoặc pull request lên nhánh master
 on:
   push:
     branches:
-      - master  # Kích hoạt khi có push vào nhánh master
+      - master
   pull_request:
     branches:
-      - master  # Kích hoạt khi có pull request vào nhánh master
+      - master
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Sử dụng runner Ubuntu mới nhất
+    runs-on: ubuntu-latest
 
     steps:
-      # 1. Check out mã nguồn từ repository
-      # Sử dụng hành động `actions/checkout@v4` để tải mã nguồn của project từ repository vào trong môi trường làm việc của runner.
       - name: Check out code
         uses: actions/checkout@v4
-      # Thêm thông tin về thư mục hiện tại và liệt kê file, folder
-      - name: List files after checkout
-        run: |
-          echo "Current working directory: $(pwd)"
-          echo "Listing all files and directories in current path:"
-          ls -al
 
-      # 2. Thiết lập JDK
-      # Thiết lập môi trường JDK 17 để có thể biên dịch và chạy ứng dụng Java/Spring Boot.
-      # 'temurin' là một bản phân phối của OpenJDK được sử dụng phổ biến.
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'  # Sử dụng OpenJDK Temurin
-          java-version: '17'  # Sử dụng phiên bản Java 17
-      # Thêm thông tin về thư mục hiện tại và liệt kê file, folder
-      - name: List files after setting up JDK
-        run: |
-          echo "Current working directory: $(pwd)"
-          echo "Listing all files and directories in current path:"
-          ls -al
+          distribution: 'temurin'
+          java-version: '17'
 
-      # 3. Build ứng dụng với Maven
-      # Bước này sẽ biên dịch và đóng gói ứng dụng Spring Boot thành file JAR.
-      # 'mvn clean install' sẽ thực hiện việc xóa các file build trước đó, biên dịch, chạy test, và đóng gói ứng dụng.
       - name: Build with Maven
+        run: mvn clean install
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Build Docker image
+        run: docker build -t myproject1-app:latest .
+
+      - name: Tag Docker image
+        run: docker tag myproject1-app:latest 600627348552.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest
+
+      - name: Log in to AWS ECR
         run: |
-          echo "Building the project using Maven..."
-          echo "Current working directory: $(pwd)"
-          echo "Listing all files and directories in current path:"
-          ls -al
-          mvn clean install
-          echo "Maven build completed."
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 600627348552.dkr.ecr.us-east-1.amazonaws.com
 
-      # 4. Đăng nhập Docker Hub
-      # Sử dụng thông tin Docker Hub được lưu trong GitHub Secrets để đăng nhập vào Docker Hub trước khi push image.
-      - name: Log in to Docker Hub
-        run: |
-          echo "Current working directory: $(pwd)"
-          echo "Listing all files and directories in current path:"
-          ls -al
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+      - name: Push Docker image to AWS ECR
+        run: docker push 600627348552.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest
 
-      # 5. Build Docker image
-      # Build Docker image từ Dockerfile trong repository và gán thẻ 'myproject1-app:latest'.
-      - name: Build Docker Image
-        run: |
-          echo "Building Docker image..."
-          echo "Current working directory: $(pwd)"
-          echo "Listing all files and directories in current path:"
-          ls -al
-          docker build -t myproject1-app:latest .
-          echo "Docker image build completed."
+      # SSH vào EC2 và triển khai Docker container
+      - name: Deploy Docker container on EC2
+        uses: appleboy/ssh-action@v0.1.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            # Cập nhật hệ thống và cài đặt Docker nếu chưa có
+            sudo yum update -y
+            sudo amazon-linux-extras install docker -y
+            sudo service docker start
+            sudo usermod -a -G docker ec2-user
 
-      # 6. Liệt kê Docker image
-      # Kiểm tra và liệt kê tất cả các image đã được tạo trên môi trường Docker để đảm bảo image được tạo thành công.
-      - name: List Docker Images
-        run: |
-          echo "Listing Docker images to verify build..."
-          echo "Current working directory: $(pwd)"
-          echo "Listing all files and directories in current path:"
-          ls -al
-          docker images
+            # Kích hoạt nhóm docker ngay lập tức trong session này
+            newgrp docker
 
-      # 7. Tạo Docker network
-      # Tạo một Docker network để các container (MySQL và Spring Boot) có thể kết nối với nhau.
-      # Docker network này giúp các container giao tiếp qua tên host trong cùng một mạng ảo.
-      - name: Create Docker Network
-        run: |
-          echo "Creating Docker network..."
-          echo "Current working directory: $(pwd)"
-          echo "Listing all files and directories in current path:"
-          ls -al
-          docker network create myproject-network
-          echo "Docker network created."
+            # Cài đặt Docker Compose (nếu chưa có)
+            sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
 
-      # 8. Chạy MySQL container trong Docker network
-      # Khởi động container MySQL trong Docker network với tên là 'myproject-mysql'.
-      # - `--network myproject-network`: Chạy container trong network vừa tạo.
-      # - `-e MYSQL_ROOT_PASSWORD=2702`: Đặt mật khẩu cho tài khoản root của MySQL.
-      # - `-e MYSQL_DATABASE=myprojectdb`: Tạo cơ sở dữ liệu tên 'myprojectdb' khi MySQL khởi động.
-      # - `-v /tmp/shared_data:/shared_data`: Chia sẻ thư mục `/tmp/shared_data` trên host với `/shared_data` trong container MySQL.
-      # - `-p 3306:3306`: Ánh xạ cổng 3306 của container MySQL ra cổng 3306 của host.
-      - name: Run MySQL Container
-        run: |
-          echo "Running MySQL container..."
-          echo "Current working directory: $(pwd)"
-          echo "Listing all files and directories in current path:"
-          ls -al
-          # Tạo thư mục shared_data nếu chưa tồn tại
-          if [ ! -d /tmp/shared_data ]; then
-            echo "Creating /tmp/shared_data directory..."
-            sudo mkdir -p /tmp/shared_data
-          fi
-          # Đảm bảo quyền truy cập
-          sudo chown -R 999:999 /tmp/shared_data  # Thêm quyền thích hợp cho thư mục chia sẻ
-          
-          docker run -d --name myproject-mysql --network myproject-network \
-            -e MYSQL_ROOT_PASSWORD=2702 \
-            -e MYSQL_DATABASE=myprojectdb \
-            -v /tmp/shared_data:/shared_data \
-            -p 3306:3306 mysql:8.0
-          echo "MySQL container is running."
+            # Đăng nhập vào ECR
+            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 600627348552.dkr.ecr.us-east-1.amazonaws.com
 
-      # 9. Đợi MySQL khởi động và sẵn sàng
-      # Chờ 30 giây để MySQL có đủ thời gian khởi động và sẵn sàng chấp nhận kết nối.
-      - name: Wait for MySQL to be ready
-        run: |
-          echo "Waiting for MySQL to be ready..."
-          echo "Current working directory: $(pwd)"
-          echo "Listing all files and directories in current path:"
-          ls -al
-          sleep 30  # Thời gian chờ để MySQL khởi động
-          echo "MySQL should be ready now."
+            # Tạo file docker-compose.yml trên EC2 để khởi động MySQL và ứng dụng Spring Boot
+            cat <<EOF > docker-compose.yml
+            version: '3.8'
 
-      # 10. Chạy ứng dụng Spring Boot với Docker run, trong cùng network
-      # Khởi động ứng dụng Spring Boot trong Docker container với các biến môi trường kết nối MySQL.
-      # - `--network myproject-network`: Chạy trong cùng network với MySQL để kết nối qua tên host.
-      # - `-e SPRING_DATASOURCE_URL=jdbc:mysql://myproject-mysql:3306/myprojectdb`: URL kết nối MySQL.
-      - name: Run Spring Boot Container with Docker Run
-        run: |
-          echo "Running Spring Boot application with Docker Run..."
-          echo "Current working directory: $(pwd)"
-          echo "Listing all files and directories in current path:"
-          ls -al
-          docker run -d --name myproject1-container --network myproject-network \
-            -p 8080:8080 \
-            -e SPRING_DATASOURCE_URL=jdbc:mysql://myproject-mysql:3306/myprojectdb \
-            -e SPRING_DATASOURCE_USERNAME=root \
-            -e SPRING_DATASOURCE_PASSWORD=2702 \
-            -v /tmp/shared_data:/app/shared_data myproject1-app:latest
-          echo "Spring Boot application is running."
+            services:
+              db:
+                image: mysql:8.0
+                container_name: myproject-mysql
+                environment:
+                  MYSQL_ROOT_PASSWORD: MySecurePass2702
+                  MYSQL_DATABASE: myprojectdb
+                ports:
+                  - "3306:3306"
+                networks:
+                  - myproject-network
+                volumes:
+                  - my_db_data:/var/lib/mysql
+                healthcheck:
+                  test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+                  interval: 10s
+                  retries: 5
 
-      # 11. Kiểm tra trạng thái container
-      # Liệt kê tất cả các container để kiểm tra trạng thái, xem container nào đang chạy hoặc đã dừng.
-      - name: Check Running Docker Containers
-        run: |
-          echo "Listing all running Docker containers..."
-          echo "Current working directory: $(pwd)"
-          echo "Listing all files and directories in current path:"
-          ls -al
-          docker ps -a
-          echo "Container status checked."
+              app:
+                image: 600627348552.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest
+                container_name: myproject1-container
+                environment:
+                  SPRING_DATASOURCE_URL: jdbc:mysql://myproject-mysql:3306/myprojectdb
+                  SPRING_DATASOURCE_USERNAME: root
+                  SPRING_DATASOURCE_PASSWORD: MySecurePass2702
+                ports:
+                  - "8080:8080"
+                depends_on:
+                  db:
+                    condition: service_healthy
+                networks:
+                  - myproject-network
 
-      # 12. Xem chi tiết các container đang chạy (bổ sung để kiểm tra thêm chi tiết)
-      # Thêm log để xem các thông tin chi tiết của container (bao gồm cả MySQL và Spring Boot).
-      - name: Inspect Docker Containers
-        run: |
-          echo "Inspecting all containers for additional details..."
-          echo "Current working directory: $(pwd)"
-          echo "Listing all files and directories in current path:"
-          ls -al
-          docker inspect myproject1-container || echo "Failed to inspect Spring Boot container"
-          docker inspect myproject-mysql || echo "Failed to inspect MySQL container"
-          echo "Inspection completed."
+            networks:
+              myproject-network:
+                driver: bridge
 
-      # 13. Kiểm tra dữ liệu chia sẻ giữa MySQL, Spring Boot và máy host
-      - name: Check Shared Data Between Containers and Host
-        run: |
-          echo "Checking files in shared data directory on host..."
-          ls -al /tmp/shared_data
+            volumes:
+              my_db_data:
+            EOF
 
-          echo "Checking files in shared data directory in MySQL container..."
-          docker exec myproject-mysql ls -al /shared_data
+            # Chạy Docker Compose để khởi động MySQL và ứng dụng Spring Boot
+            sudo docker-compose up -d
 
-          echo "Checking files in shared data directory in Spring Boot container..."
-          docker exec myproject1-container ls -al /app/shared_data
+            # Đợi MySQL và ứng dụng Spring Boot khởi động
+            echo "Waiting for MySQL and Spring Boot to be ready..."
+            sleep 60
 
-          echo "Data sharing between containers and host checked."
+            # Kiểm tra container đang chạy
+            docker ps -a
 
-      # 14. Kiểm tra log chi tiết của ứng dụng Spring Boot
-      # Lấy log từ container chạy ứng dụng Spring Boot để kiểm tra trạng thái khởi động.
-      - name: Check Detailed Spring Boot Logs
-        run: |
-          echo "Checking detailed logs of the Spring Boot application..."
-          echo "Current working directory: $(pwd)"
-          echo "Listing all files and directories in current path:"
-          ls -al
-          docker logs myproject1-container || echo "Failed to retrieve Spring Boot logs" #docker logs -f để xem chi tiết log Spring Boot
-          echo "Spring Boot logs checked."
+            # Kiểm tra logs của Spring Boot container
+            docker logs myproject1-container || echo "Failed to retrieve Spring Boot logs"
 
-      # 15. Chạy kiểm tra sức khỏe (health check) của ứng dụng với curl
-      # Chờ ứng dụng Spring Boot khởi động trong 60 giây, sau đó kiểm tra tình trạng sức khỏe qua endpoint /actuator/health.
-      # curl -v hiển thị thông tin chi tiết của request và response.
-      - name: Run Health Check
-        run: |
-          echo "Waiting for the application to be ready..."
-          echo "Current working directory: $(pwd)"
-          echo "Listing all files and directories in current path:"
-          ls -al
-          sleep 60  # Thời gian chờ để ứng dụng khởi động
-          echo "Running health check on the application..."
-          curl -v http://localhost:8080/actuator/health || echo "Health check failed"
-          echo "Health check completed."
-
-
+            # Chạy health check trên ứng dụng Spring Boot bằng IP công cộng của EC2
+            curl -v http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4):8080/actuator/health || echo "Health check failed"
