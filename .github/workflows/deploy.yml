@@ -67,7 +67,11 @@ jobs:
             # Cài đặt Docker Compose (nếu chưa có)
             sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose  # Tải và cài đặt Docker Compose
             sudo chmod +x /usr/local/bin/docker-compose  # Cấp quyền thực thi cho Docker Compose
-            sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose  # Tạo liên kết mềm để sử dụng Docker Compose dễ dàng hơn
+
+            # Kiểm tra nếu liên kết mềm tới Docker Compose đã tồn tại, tránh lỗi "File exists"
+            if [ ! -f "/usr/bin/docker-compose" ]; then
+              sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+            fi
 
             # Xóa container cũ (nếu có) trước khi tạo container mới
             sudo docker rm -f myproject1-container || true  # Xóa container ứng dụng cũ nếu tồn tại
