@@ -59,10 +59,13 @@ jobs:
             sudo amazon-linux-extras install docker
             sudo service docker start
             sudo usermod -a -G docker ec2-user
-            
+
+            # Kích hoạt nhóm docker ngay lập tức trong session này
+            newgrp docker
+
             # Đăng xuất và đăng nhập vào ECR
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 600627348552.dkr.ecr.us-east-1.amazonaws.com
-            
+
             # Kéo Docker image từ ECR
             docker pull 600627348552.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest
             
