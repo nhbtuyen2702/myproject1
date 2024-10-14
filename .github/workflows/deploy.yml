@@ -67,6 +67,9 @@ jobs:
             sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
             sudo chmod +x /usr/local/bin/docker-compose
 
+            # Kiểm tra xem Docker Compose đã được cài đặt thành công chưa
+            docker-compose --version || echo "Docker Compose installation failed"
+
             # Đăng nhập vào ECR
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 600627348552.dkr.ecr.us-east-1.amazonaws.com
 
