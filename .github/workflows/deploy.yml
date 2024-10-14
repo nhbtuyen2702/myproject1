@@ -69,11 +69,15 @@ jobs:
             sudo chmod +x /usr/local/bin/docker-compose  # Cấp quyền thực thi cho Docker Compose
             sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose  # Tạo liên kết mềm để sử dụng Docker Compose dễ dàng hơn
 
-            # Xóa tất cả container cũ nếu có trước khi tạo container mới
-            sudo docker-compose down || true  # Xóa tất cả container nếu có
+            # Xóa container cũ (nếu có) trước khi tạo container mới
+            docker rm -f myproject1-container || true  # Xóa container ứng dụng cũ nếu tồn tại
+            docker rm -f myproject-mysql || true  # Xóa container MySQL cũ nếu tồn tại
 
             # Đăng nhập vào ECR
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com  # Đăng nhập vào AWS ECR để pull Docker image
+
+            # Pull Docker image từ ECR trước khi chạy docker-compose
+            docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest  # Pull image mới nhất từ ECR
 
             # Tạo file docker-compose.yml trên EC2 để khởi động MySQL và ứng dụng Spring Boot
             cat <<EOF > docker-compose.yml
@@ -128,10 +132,10 @@ jobs:
             sleep 60  # Chờ 60 giây để cả MySQL và ứng dụng khởi động
 
             # Kiểm tra container đang chạy
-            sudo docker ps -a  # Liệt kê tất cả các container để kiểm tra tình trạng
+            docker ps -a  # Liệt kê tất cả các container để kiểm tra tình trạng
 
             # Kiểm tra logs của Spring Boot container
-            sudo docker logs myproject1-container || echo "Failed to retrieve Spring Boot logs"  # Kiểm tra log của container ứng dụng Spring Boot
+            docker logs myproject1-container || echo "Failed to retrieve Spring Boot logs"  # Kiểm tra log của container ứng dụng Spring Boot
 
             # Chạy health check trên ứng dụng Spring Boot bằng IP công cộng của EC2
             curl -v http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4):8080/actuator/health || echo "Health check failed"  # Kiểm tra sức khỏe của ứng dụng bằng cách truy cập endpoint /actuator/health
