@@ -77,52 +77,54 @@ jobs:
             sudo docker rm -f myproject1-container || true  # Xóa container ứng dụng cũ nếu tồn tại
             sudo docker rm -f myproject-mysql || true  # Xóa container MySQL cũ nếu tồn tại
 
-            # Đăng nhập vào ECR
-            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com  # Đăng nhập vào AWS ECR để pull Docker image
+            # Xóa file docker-compose.yml nếu đã tồn tại để tạo file mới
+            if [ -f "docker-compose.yml" ]; then
+              sudo rm docker-compose.yml  # Xóa file docker-compose.yml cũ nếu tồn tại
+            fi
 
             # Tạo file docker-compose.yml trên EC2 để khởi động MySQL và ứng dụng Spring Boot
-             cat <<EOF > docker-compose.yml
+            cat <<EOF > docker-compose.yml
             version: '3.8'
 
             services:
               db:
-                image: mysql:8.0
-                container_name: myproject-mysql
+                image: mysql:8.0  # Sử dụng Docker image của MySQL
+                container_name: myproject-mysql  # Tên container MySQL
                 environment:
-                  MYSQL_ROOT_PASSWORD: MySecurePass2702
-                  MYSQL_DATABASE: myprojectdb
+                  MYSQL_ROOT_PASSWORD: MySecurePass2702  # Đặt mật khẩu cho tài khoản root MySQL
+                  MYSQL_DATABASE: myprojectdb  # Tạo cơ sở dữ liệu myprojectdb khi MySQL khởi động
                 ports:
-                  - "3306:3306"
+                  - "3306:3306"  # Mở cổng 3306 cho MySQL
                 networks:
-                  - myproject-network
+                  - myproject-network  # Đặt container MySQL trong network myproject-network
                 volumes:
-                  - my_db_data:/var/lib/mysql
+                  - my_db_data:/var/lib/mysql  # Mount volume để lưu trữ dữ liệu của MySQL
                 healthcheck:
-                  test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-                  interval: 10s
-                  retries: 5
+                  test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]  # Kiểm tra tình trạng MySQL
+                  interval: 10s  # Thực hiện kiểm tra mỗi 10 giây
+                  retries: 5  # Thử lại 5 lần nếu kiểm tra thất bại
 
               app:
-                image: 600627348552.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest
-                container_name: myproject1-container
+                image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest  # Sử dụng Docker image của ứng dụng Spring Boot từ AWS ECR
+                container_name: myproject1-container  # Tên container của ứng dụng
                 environment:
-                  SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/myprojectdb
-                  SPRING_DATASOURCE_USERNAME: root
-                  SPRING_DATASOURCE_PASSWORD: MySecurePass2702
+                  SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/myprojectdb  # Cấu hình kết nối tới MySQL
+                  SPRING_DATASOURCE_USERNAME: root  # Tên đăng nhập MySQL
+                  SPRING_DATASOURCE_PASSWORD: MySecurePass2702  # Mật khẩu MySQL
                 ports:
-                  - "8080:8080"
+                  - "8080:8080"  # Mở cổng 8080 cho ứng dụng Spring Boot
                 depends_on:
                   db:
-                    condition: service_healthy
+                    condition: service_healthy  # Đảm bảo MySQL đã sẵn sàng trước khi chạy ứng dụng
                 networks:
-                  - myproject-network
+                  - myproject-network  # Đặt container ứng dụng trong cùng network với MySQL
 
             networks:
               myproject-network:
-                driver: bridge
+                driver: bridge  # Tạo network kiểu bridge để các container giao tiếp với nhau
 
             volumes:
-              my_db_data:
+              my_db_data:  # Tạo volume để lưu trữ dữ liệu MySQL
             EOF
 
             # Chạy Docker Compose để khởi động MySQL và ứng dụng Spring Boot
