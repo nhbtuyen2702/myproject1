@@ -10,77 +10,70 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Sử dụng môi trường Ubuntu mới nhất để thực thi các tác vụ
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Check out code  # Bước kiểm tra và lấy mã nguồn từ repository
-        uses: actions/checkout@v4  # Sử dụng hành động để checkout code từ repository GitHub
+      - name: Check out code
+        uses: actions/checkout@v4
 
-      - name: Set up JDK 17  # Thiết lập môi trường Java 17 để biên dịch và chạy ứng dụng Spring Boot
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'  # Sử dụng bản phân phối Temurin của OpenJDK
-          java-version: '17'  # Cài đặt phiên bản Java 17
+          distribution: 'temurin'
+          java-version: '17'
 
-      - name: Build with Maven  # Biên dịch ứng dụng Spring Boot bằng Maven
-        run: mvn clean install  # Chạy lệnh Maven để xây dựng dự án
+      - name: Build with Maven
+        run: mvn clean install
 
-      - name: Configure AWS credentials  # Thiết lập thông tin xác thực để kết nối với AWS
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}  # Sử dụng thông tin AWS_ACCESS_KEY_ID từ GitHub Secrets
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # Sử dụng thông tin AWS_SECRET_ACCESS_KEY từ GitHub Secrets
-          aws-region: us-east-1  # Chỉ định vùng AWS là us-east-1
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-      - name: Build Docker image  # Tạo Docker image từ mã nguồn của dự án
-        run: docker build -t myproject1-app:latest .  # Build Docker image và gắn nhãn "latest"
+      - name: Build Docker image
+        run: docker build -t myproject1-app:latest .
 
-      - name: Tag Docker image  # Gắn nhãn Docker image để đẩy lên AWS ECR (Elastic Container Registry)
-        run: docker tag myproject1-app:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest
+      - name: Tag Docker image
+        run: docker tag myproject1-app:latest 600627348552.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest
 
-      - name: Log in to AWS ECR  # Đăng nhập vào AWS ECR để có thể đẩy Docker image lên
+      - name: Log in to AWS ECR
         run: |
-          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 600627348552.dkr.ecr.us-east-1.amazonaws.com
 
-      - name: Push Docker image to AWS ECR  # Đẩy Docker image đã build lên AWS ECR
-        run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest
+      - name: Push Docker image to AWS ECR
+        run: docker push 600627348552.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest
 
-      # SSH vào EC2 và triển khai Docker container
+        # SSH vào EC2 và triển khai Docker container
       - name: Deploy Docker container on EC2
-        uses: appleboy/ssh-action@v0.1.0  # Sử dụng hành động SSH để kết nối với EC2
+        uses: appleboy/ssh-action@v0.1.0
         with:
-          host: ${{ secrets.EC2_HOST }}  # IP hoặc hostname của EC2 lấy từ GitHub Secrets
-          username: ec2-user  # Tài khoản SSH để kết nối với EC2
-          key: ${{ secrets.EC2_SSH_KEY }}  # Khóa SSH để xác thực kết nối với EC2
-          port: 22  # Cổng SSH (22)
-
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
           script: |
             # Cập nhật hệ thống và cài đặt Docker nếu chưa có
-            sudo yum update -y  # Cập nhật hệ thống
-            sudo amazon-linux-extras install docker -y  # Cài đặt Docker trên EC2
-            sudo service docker start  # Khởi động Docker service
-            sudo usermod -aG docker ec2-user  # Thêm người dùng ec2-user vào nhóm docker
+            sudo yum update -y
+            sudo amazon-linux-extras install docker -y
+            sudo service docker start
+            sudo usermod -a -G docker ec2-user
 
             # Kích hoạt nhóm docker ngay lập tức trong session này
-            newgrp docker  # Kích hoạt quyền sử dụng Docker ngay lập tức
+            newgrp docker
 
             # Cài đặt Docker Compose (nếu chưa có)
-            sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose  # Tải và cài đặt Docker Compose
-            sudo chmod +x /usr/local/bin/docker-compose  # Cấp quyền thực thi cho Docker Compose
-
-            # Kiểm tra nếu liên kết mềm tới Docker Compose đã tồn tại, tránh lỗi "File exists"
-            if [ ! -f "/usr/bin/docker-compose" ]; then
-              sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-            fi
+            sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+            sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
             # Xóa container cũ (nếu có) trước khi tạo container mới
-            sudo docker rm -f myproject1-container || true  # Xóa container ứng dụng cũ nếu tồn tại
-            sudo docker rm -f myproject-mysql || true  # Xóa container MySQL cũ nếu tồn tại
+            docker rm -f myproject1-container || true
+            docker rm -f myproject-mysql || true
 
-            # Xóa file docker-compose.yml nếu đã tồn tại để tạo file mới
-            if [ -f "docker-compose.yml" ]; then
-              sudo rm docker-compose.yml  # Xóa file docker-compose.yml cũ nếu tồn tại
-            fi
+            # Đăng nhập vào ECR
+            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 600627348552.dkr.ecr.us-east-1.amazonaws.com
 
             # Tạo file docker-compose.yml trên EC2 để khởi động MySQL và ứng dụng Spring Boot
             cat <<EOF > docker-compose.yml
@@ -88,57 +81,57 @@ jobs:
 
             services:
               db:
-                image: mysql:8.0  # Sử dụng Docker image của MySQL
-                container_name: myproject-mysql  # Tên container MySQL
+                image: mysql:8.0
+                container_name: myproject-mysql
                 environment:
-                  MYSQL_ROOT_PASSWORD: MySecurePass2702  # Đặt mật khẩu cho tài khoản root MySQL
-                  MYSQL_DATABASE: myprojectdb  # Tạo cơ sở dữ liệu myprojectdb khi MySQL khởi động
+                  MYSQL_ROOT_PASSWORD: MySecurePass2702
+                  MYSQL_DATABASE: myprojectdb
                 ports:
-                  - "3306:3306"  # Mở cổng 3306 cho MySQL
+                  - "3306:3306"
                 networks:
-                  - myproject-network  # Đặt container MySQL trong network myproject-network
+                  - myproject-network
                 volumes:
-                  - my_db_data:/var/lib/mysql  # Mount volume để lưu trữ dữ liệu của MySQL
+                  - my_db_data:/var/lib/mysql
                 healthcheck:
-                  test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]  # Kiểm tra tình trạng MySQL
-                  interval: 10s  # Thực hiện kiểm tra mỗi 10 giây
-                  retries: 5  # Thử lại 5 lần nếu kiểm tra thất bại
+                  test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+                  interval: 10s
+                  retries: 5
 
               app:
-                image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest  # Sử dụng Docker image của ứng dụng Spring Boot từ AWS ECR
-                container_name: myproject1-container  # Tên container của ứng dụng
+                image: 600627348552.dkr.ecr.us-east-1.amazonaws.com/myproject1-app-repo:latest
+                container_name: myproject1-container
                 environment:
-                  SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/myprojectdb  # Cấu hình kết nối tới MySQL
-                  SPRING_DATASOURCE_USERNAME: root  # Tên đăng nhập MySQL
-                  SPRING_DATASOURCE_PASSWORD: MySecurePass2702  # Mật khẩu MySQL
+                  SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/myprojectdb
+                  SPRING_DATASOURCE_USERNAME: root
+                  SPRING_DATASOURCE_PASSWORD: MySecurePass2702
                 ports:
-                  - "8080:8080"  # Mở cổng 8080 cho ứng dụng Spring Boot
+                  - "8080:8080"
                 depends_on:
                   db:
-                    condition: service_healthy  # Đảm bảo MySQL đã sẵn sàng trước khi chạy ứng dụng
+                    condition: service_healthy
                 networks:
-                  - myproject-network  # Đặt container ứng dụng trong cùng network với MySQL
+                  - myproject-network
 
             networks:
               myproject-network:
-                driver: bridge  # Tạo network kiểu bridge để các container giao tiếp với nhau
+                driver: bridge
 
             volumes:
-              my_db_data:  # Tạo volume để lưu trữ dữ liệu MySQL
+              my_db_data:
             EOF
 
             # Chạy Docker Compose để khởi động MySQL và ứng dụng Spring Boot
-            sudo docker-compose up -d  # Khởi động các container ở chế độ nền
+            sudo docker-compose up -d
 
             # Đợi MySQL và ứng dụng Spring Boot khởi động
             echo "Waiting for MySQL and Spring Boot to be ready..."
-            sleep 60  # Chờ 60 giây để cả MySQL và ứng dụng khởi động
+            sleep 60
 
             # Kiểm tra container đang chạy
-            sudo docker ps -a  # Liệt kê tất cả các container để kiểm tra tình trạng
+            docker ps -a
 
             # Kiểm tra logs của Spring Boot container
-            sudo docker logs myproject1-container || echo "Failed to retrieve Spring Boot logs"  # Kiểm tra log của container ứng dụng Spring Boot
+            docker logs myproject1-container || echo "Failed to retrieve Spring Boot logs"
 
             # Chạy health check trên ứng dụng Spring Boot bằng IP công cộng của EC2
-            curl -v http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4):8080/actuator/health || echo "Health check failed"  # Kiểm tra sức khỏe của ứng dụng bằng cách truy cập endpoint /actuator/health
+            curl -v http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4):8080/actuator/health || echo "Health check failed"
